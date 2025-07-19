@@ -1,12 +1,17 @@
 <script setup>
-import { ref } from 'vue';
+import { defineProps, defineEmits, ref } from 'vue';
 import ApplicationLogo from '@/Components/ApplicationLogo.vue';
 import Dropdown from '@/Components/Dropdown.vue';
 import DropdownLink from '@/Components/DropdownLink.vue';
 import NavLink from '@/Components/NavLink.vue';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
-import { Link } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
 
+const props = defineProps({
+  activeTab: String
+});
+const emit = defineEmits(['change-tab']);
+const page = usePage();
 const showingNavigationDropdown = ref(false);
 </script>
 
@@ -22,11 +27,11 @@ const showingNavigationDropdown = ref(false);
                         <div class="flex">
                             <!-- Logo -->
                             <div class="flex shrink-0 items-center">
-                                <Link :href="route('home')">
+                                <button @click="emit('change-tab', 'home')" class="focus:outline-none">
                                     <ApplicationLogo
                                         class="block h-9 w-auto fill-current text-gray-800 dark:text-white"
                                     />
-                                </Link>
+                                </button>
                             </div>
 
                             <!-- Navigation Links -->
@@ -34,6 +39,14 @@ const showingNavigationDropdown = ref(false);
                                 class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex"
                             >
                                 <!-- RIMOSSO: NavLink Dashboard -->
+                                <button
+                                    v-if="page.props.auth.user && page.props.auth.user.hasManagementPermissions"
+                                    class="ml-4 px-4 py-2 rounded bg-blue-700 text-white font-semibold hover:bg-blue-800 transition"
+                                    @click="emit('change-tab', 'permessi')"
+                                    type="button"
+                                >
+                                    Gestione permessi
+                                </button>
                             </div>
                         </div>
 
@@ -160,6 +173,14 @@ const showingNavigationDropdown = ref(false);
                             >
                                 Log Out
                             </ResponsiveNavLink>
+                            <button
+                                v-if="page.props.auth.user && page.props.auth.user.hasManagementPermissions"
+                                class="w-full text-left px-4 py-2 rounded bg-blue-700 text-white font-semibold hover:bg-blue-800 transition"
+                                @click="emit('change-tab', 'permessi')"
+                                type="button"
+                            >
+                                Gestione permessi
+                            </button>
                         </div>
                     </div>
                 </div>
