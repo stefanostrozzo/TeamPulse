@@ -1,205 +1,198 @@
 <script setup>
-import { defineProps, defineEmits, ref } from 'vue';
+import { defineProps, defineEmits, ref, computed } from 'vue';
+import { Link, usePage, router } from '@inertiajs/vue3';
+
+import SidebarContainer from '@/Components/Sidebar/SidebarContainer.vue';
+import SidebarLogo from '@/Components/Sidebar/SidebarLogo.vue';
+import SidebarSection from '@/Components/Sidebar/SidebarSection.vue';
+import SidebarItem from '@/Components/Sidebar/SidebarItem.vue';
 import ApplicationLogo from '@/Components/ApplicationLogo.vue';
-import Dropdown from '@/Components/Dropdown.vue';
-import DropdownLink from '@/Components/DropdownLink.vue';
-import NavLink from '@/Components/NavLink.vue';
-import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
-import { Link, usePage } from '@inertiajs/vue3';
+import Topbar from '@/Components/Topbar/Topbar.vue';
+import NotificationDrawer from '@/Components/Drawer/NotificationDrawer.vue';
+
+// Importa il componente del profilo
+import UpdateProfileInformationForm from '@/Pages/Profile/Partials/UpdateProfileInformationForm.vue';
 
 const props = defineProps({
-  activeTab: String
+    activeTab: String,
+    mustVerifyEmail: {
+        type: Boolean,
+        default: false
+    },
+    status: {
+        type: String,
+        default: ''
+    }
 });
 const emit = defineEmits(['change-tab']);
 const page = usePage();
-const showingNavigationDropdown = ref(false);
+
+const collapsed = ref(false);
+const notificationOpen = ref(false);
+const notificationsCount = ref(0);
+
+const user = computed(() => page.props.auth?.user ?? null);
+
+function go(tab) {
+    emit('change-tab', tab);
+}
+
+function logout() {
+    router.post(route('logout'));
+}
 </script>
 
 <template>
-    <div>
-        <div class="min-h-screen bg-gray-100 dark:bg-gray-900">
-            <nav
-                class="border-b border-gray-100 bg-white dark:bg-gray-800 dark:border-gray-700"
-            >
-                <!-- Primary Navigation Menu -->
-                <div class="px-4 sm:px-6 lg:px-8 w-full">
-                    <div class="flex h-16 justify-between">
-                        <div class="flex">
-                            <!-- Logo -->
-                            <div class="flex shrink-0 items-center">
-                                <button @click="emit('change-tab', 'home')" class="focus:outline-none">
-                                    <ApplicationLogo
-                                        class="block h-9 w-auto fill-current text-gray-800 dark:text-white"
-                                    />
-                                </button>
-                            </div>
+    <div class="min-h-screen bg-gray-900 text-gray-100 flex w-full">
+        <!-- Sidebar -->
+        <SidebarContainer :collapsed="collapsed">
+            <SidebarLogo :collapsed="collapsed" @toggle="collapsed = !collapsed">
+                <template #icon>
+                    <ApplicationLogo class="h-9 w-9 object-contain" />
+                </template>
+                <template #expand-icon>
+                    <i class="fas fa-chevron-right text-gray-400 text-xs"></i>
+                </template>
+                <template #collapse-icon>
+                    <i class="fas fa-chevron-left text-gray-400 text-xs"></i>
+                </template>
+            </SidebarLogo>
 
-                            <!-- Navigation Links -->
-                            <div
-                                class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex"
-                            >
-                                <!-- RIMOSSO: NavLink Dashboard -->
-                                <button
-                                    v-if="page.props.auth.user && page.props.auth.user.hasManagementPermissions"
-                                    class="ml-4 px-4 py-2 rounded bg-blue-700 text-white font-semibold hover:bg-blue-800 transition"
-                                    @click="emit('change-tab', 'permessi')"
-                                    type="button"
-                                >
-                                    Gestione permessi
-                                </button>
-                            </div>
-                        </div>
+            <nav class="sidebar-nav px-3 py-4 flex-1 overflow-y-auto overflow-x-hidden">
+                <SidebarSection title="Principale" :collapsed="collapsed">
+                    <SidebarItem :active="props.activeTab === 'home'" :collapsed="collapsed" @click="go('home')">
+                        <template #icon>
+                            <i class="fas fa-home"></i>
+                        </template>
+                        Dashboard
+                    </SidebarItem>
+                    <SidebarItem :active="props.activeTab === 'progetti'" :collapsed="collapsed" badge="" @click="go('progetti')">
+                        <template #icon>
+                            <i class="fas fa-project-diagram"></i>
+                        </template>
+                        Progetti
+                    </SidebarItem>
+                    <SidebarItem :active="props.activeTab === 'deadlines'" :collapsed="collapsed" badge="" @click="go('deadlines')">
+                        <template #icon>
+                            <i class="fas fa-calendar-day"></i>
+                        </template>
+                        Deadlines
+                    </SidebarItem>
+                    <SidebarItem :active="props.activeTab === 'membri'" :collapsed="collapsed" @click="go('membri')">
+                        <template #icon>
+                            <i class="fas fa-users"></i>
+                        </template>
+                        Gestisci membri
+                    </SidebarItem>
+                </SidebarSection>
 
-                        <div class="hidden sm:ms-6 sm:flex sm:items-center">
-                            <!-- Settings Dropdown -->
-                            <div class="relative ms-3">
-                                <Dropdown align="right" width="48">
-                                    <template #trigger>
-                                        <span class="inline-flex rounded-md">
-                                            <button
-                                                type="button"
-                                                class="inline-flex items-center rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-500 transition duration-150 ease-in-out hover:text-gray-700 focus:outline-none"
-                                            >
-                                                {{ $page.props.auth.user.name }}
+                <SidebarSection title="Strumenti" :collapsed="collapsed">
+                    <SidebarItem :active="props.activeTab === 'task'" :collapsed="collapsed" @click="go('task')">
+                        <template #icon>
+                            <i class="fas fa-tasks"></i>
+                        </template>
+                        Task Board
+                    </SidebarItem>
+                    <SidebarItem :active="props.activeTab === 'report'" :collapsed="collapsed" @click="go('report')">
+                        <template #icon>
+                            <i class="fas fa-chart-line"></i>
+                        </template>
+                        Report
+                    </SidebarItem>
+                    <SidebarItem :active="props.activeTab === 'chat'" :collapsed="collapsed" badge="" @click="go('chat')">
+                        <template #icon>
+                            <i class="fas fa-comments"></i>
+                        </template>
+                        Chat
+                    </SidebarItem>
+                </SidebarSection>
 
-                                                <svg
-                                                    class="-me-0.5 ms-2 h-4 w-4"
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    viewBox="0 0 20 20"
-                                                    fill="currentColor"
-                                                >
-                                                    <path
-                                                        fill-rule="evenodd"
-                                                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                                        clip-rule="evenodd"
-                                                    />
-                                                </svg>
-                                            </button>
-                                        </span>
-                                    </template>
-
-                                    <template #content>
-                                        <DropdownLink
-                                            :href="route('profile.edit')"
-                                        >
-                                            Profile
-                                        </DropdownLink>
-                                        <DropdownLink
-                                            :href="route('logout')"
-                                            method="post"
-                                            as="button"
-                                        >
-                                            Log Out
-                                        </DropdownLink>
-                                    </template>
-                                </Dropdown>
-                            </div>
-                        </div>
-
-                        <!-- Hamburger -->
-                        <div class="-me-2 flex items-center sm:hidden">
-                            <button
-                                @click="
-                                    showingNavigationDropdown =
-                                        !showingNavigationDropdown
-                                "
-                                class="inline-flex items-center justify-center rounded-md p-2 text-gray-400 transition duration-150 ease-in-out hover:bg-gray-100 hover:text-gray-500 focus:bg-gray-100 focus:text-gray-500 focus:outline-none"
-                            >
-                                <svg
-                                    class="h-6 w-6"
-                                    stroke="currentColor"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path
-                                        :class="{
-                                            hidden: showingNavigationDropdown,
-                                            'inline-flex':
-                                                !showingNavigationDropdown,
-                                        }"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        stroke-width="2"
-                                        d="M4 6h16M4 12h16M4 18h16"
-                                    />
-                                    <path
-                                        :class="{
-                                            hidden: !showingNavigationDropdown,
-                                            'inline-flex':
-                                                showingNavigationDropdown,
-                                        }"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        stroke-width="2"
-                                        d="M6 18L18 6M6 6l12 12"
-                                    />
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Responsive Navigation Menu -->
-                <div
-                    :class="{
-                        block: showingNavigationDropdown,
-                        hidden: !showingNavigationDropdown,
-                    }"
-                    class="sm:hidden"
-                >
-                    <!-- Responsive Settings Options -->
-                    <div
-                        class="border-t border-gray-200 pb-1 pt-4"
+                <SidebarSection title="Amministrazione" :collapsed="collapsed">
+                    <SidebarItem :active="props.activeTab === 'impostazioni'" :collapsed="collapsed" @click="go('impostazioni')">
+                        <template #icon>
+                            <i class="fas fa-cog"></i>
+                        </template>
+                        Impostazioni
+                    </SidebarItem>
+                    <SidebarItem
+                        v-if="user && user.hasManagementPermissions"
+                        :active="props.activeTab === 'permessi'"
+                        :collapsed="collapsed"
+                        @click="go('permessi')"
                     >
-                        <div class="px-4">
-                            <div
-                                class="text-base font-medium text-gray-800"
-                            >
-                                {{ $page.props.auth.user.name }}
-                            </div>
-                            <div class="text-sm font-medium text-gray-500">
-                                {{ $page.props.auth.user.email }}
-                            </div>
-                        </div>
-
-                        <div class="mt-3 space-y-1">
-                            <ResponsiveNavLink :href="route('profile.edit')">
-                                Profile
-                            </ResponsiveNavLink>
-                            <ResponsiveNavLink
-                                :href="route('logout')"
-                                method="post"
-                                as="button"
-                            >
-                                Log Out
-                            </ResponsiveNavLink>
-                            <button
-                                v-if="page.props.auth.user && page.props.auth.user.hasManagementPermissions"
-                                class="w-full text-left px-4 py-2 rounded bg-blue-700 text-white font-semibold hover:bg-blue-800 transition"
-                                @click="emit('change-tab', 'permessi')"
-                                type="button"
-                            >
-                                Gestione permessi
-                            </button>
-                        </div>
-                    </div>
-                </div>
+                        <template #icon>
+                            <i class="fas fa-shield-alt"></i>
+                        </template>
+                        Permessi
+                    </SidebarItem>
+                    <SidebarItem 
+                        :active="props.activeTab === 'profile'" 
+                        :collapsed="collapsed" 
+                        @click="go('profile')"
+                    >
+                        <template #icon>
+                            <i class="fas fa-user"></i>
+                        </template>
+                        Profilo
+                    </SidebarItem>
+                </SidebarSection>
             </nav>
 
-            <!-- Page Heading -->
-            <header
-                class="bg-white shadow dark:bg-gray-800 dark:shadow-lg"
-                v-if="$slots.header"
-            >
+            <div class="sidebar-footer px-3 py-4 border-t border-gray-700">
+                <div class="user-profile flex items-center px-2 py-2 rounded-xl hover:bg-gray-700/60" :class="{ 'justify-center': collapsed }">
+                    <div class="user-avatar w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center font-semibold" :class="{ 'mr-3': !collapsed }">
+                        {{ user?.name?.substring(0,1) ?? 'U' }}
+                    </div>
+                    <div class="user-info min-w-0" v-if="!collapsed">
+                        <div class="user-name text-sm font-medium truncate">{{ user?.name }}</div>
+                        <div class="user-role text-xs text-gray-400 truncate">{{ user?.email }}</div>
+                    </div>
+                </div>
+                <div v-if="!collapsed" class="mt-3 space-y-2">
+                    <a href="#" class="block text-sm text-gray-300 hover:text-white" @click="go('profile')">
+                        <i class="fas fa-user-circle mr-2"></i> Profile
+                    </a>
+                    <button type="button" class="block text-left text-sm text-red-400 hover:text-red-300" @click="logout">
+                        <i class="fas fa-sign-out-alt mr-2"></i> Log Out
+                    </button>
+                </div>
+            </div>
+        </SidebarContainer>
+
+        <!-- Main Content -->
+        <div class="main-content flex-1 min-w-0 flex flex-col">
+            <Topbar :notifications="notificationsCount" @toggle-notifications="notificationOpen = true" />
+
+            <header class="bg-gray-800 border-b border-gray-700" v-if="props.activeTab === 'profile'">
                 <div class="px-4 py-6 sm:px-6 lg:px-8 w-full">
-                    <slot name="header" />
+                    <h2 class="text-2xl font-bold text-white">Profilo Utente</h2>
+                    <p class="mt-1 text-sm text-gray-300">Gestisci le informazioni del tuo profilo</p>
                 </div>
             </header>
 
-            <!-- Page Content -->
-            <main class="w-full">
-                <slot />
+            <main class="content-area flex-1 p-6 overflow-y-auto">
+                <!-- Contenuto dinamico in base alla tab attiva -->
+                <div v-if="props.activeTab === 'home'">
+                    <slot />
+                </div>
+                
+                <div v-else-if="props.activeTab === 'profile'" class="max-w-4xl mx-auto">
+                    <UpdateProfileInformationForm 
+                        :must-verify-email="mustVerifyEmail" 
+                        :status="status" 
+                    />
+                </div>
+                
+                <div v-else>
+                    <div class="text-center py-12">
+                        <i class="fas fa-cogs text-6xl text-gray-600 mb-4"></i>
+                        <h3 class="text-xl font-semibold text-gray-300">Sezione in sviluppo</h3>
+                        <p class="text-gray-500 mt-2">Questa funzionalità sarà presto disponibile</p>
+                    </div>
+                </div>
             </main>
         </div>
+
+        <NotificationDrawer :open="notificationOpen" @close="notificationOpen = false" @mark-all-read="notificationsCount = 0" />
     </div>
 </template>

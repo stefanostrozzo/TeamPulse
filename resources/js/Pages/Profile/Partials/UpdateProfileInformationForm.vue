@@ -69,27 +69,6 @@ const form = useForm({
                 <InputError class="mt-2" :message="form.errors.email" />
             </div>
 
-            <div v-if="mustVerifyEmail && user.email_verified_at === null">
-                <p class="mt-2 text-sm text-gray-800 dark:text-gray-200">
-                    Il tuo indirizzo email non è verificato.
-                    <Link
-                        :href="route('verification.send')"
-                        method="post"
-                        as="button"
-                        class="rounded-md text-sm text-gray-600 dark:text-indigo-300 underline hover:text-gray-900 dark:hover:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                    >
-                        Clicca qui per inviare nuovamente il link di verifica.
-                    </Link>
-                </p>
-
-                <div
-                    v-show="status === 'verification-link-sent'"
-                    class="mt-2 text-sm font-medium text-green-600 dark:text-green-400"
-                >
-                    Un nuovo link di verifica è stato inviato al tuo indirizzo email.
-                </div>
-            </div>
-
             <div class="flex items-center gap-4">
                 <PrimaryButton :disabled="form.processing">Salva</PrimaryButton>
 
