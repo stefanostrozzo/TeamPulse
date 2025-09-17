@@ -29,7 +29,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-Route::middleware(['role:admin|superadmin'])->prefix('admin')->group(function () {
+Route::middleware(['auth', 'role:admin|superadmin'])->prefix('admin')->group(function () {
     Route::get('users', [UserManagementController::class, 'index'])->name('admin.users');
     Route::post('users', [UserManagementController::class, 'storeUser'])->name('admin.users.store');
     Route::post('roles', [UserManagementController::class, 'storeRole'])->name('admin.roles.store');
