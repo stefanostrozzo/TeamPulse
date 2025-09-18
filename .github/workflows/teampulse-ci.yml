@@ -65,8 +65,8 @@ jobs:
           restore-keys: node-modules-
 
       - name: Install Node dependencies
-        run: npm ci --prefer-offline --no-audit
-
+        run: npm install --no-audit
+        
       # ---------------- BUILD ASSETS ----------------
       - name: Build frontend assets
         run: npm run build
