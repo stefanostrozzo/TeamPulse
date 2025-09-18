@@ -139,7 +139,7 @@ function logout() {
             </nav>
 
             <div class="sidebar-footer px-3 py-4 border-t border-gray-700">
-                <div class="user-profile flex items-center px-2 py-2 rounded-xl hover:bg-gray-700/60" :class="{ 'justify-center': collapsed }">
+                <div class="user-profile flex items-center px-2 py-2 rounded-xl hover:bg-gray-700/60" :class="{ 'justify-center': collapsed }"  @click="go('profile')">
                     <div class="user-avatar w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center font-semibold" :class="{ 'mr-3': !collapsed }">
                         {{ user?.name?.substring(0,1) ?? 'U' }}
                     </div>
@@ -149,9 +149,6 @@ function logout() {
                     </div>
                 </div>
                 <div v-if="!collapsed" class="mt-3 space-y-2">
-                    <a href="#" class="block text-sm text-gray-300 hover:text-white" @click="go('profile')">
-                        <i class="fas fa-user-circle mr-2"></i> Profile
-                    </a>
                     <button type="button" class="block text-left text-sm text-red-400 hover:text-red-300" @click="logout">
                         <i class="fas fa-sign-out-alt mr-2"></i> Log Out
                     </button>
