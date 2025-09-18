@@ -116,7 +116,9 @@ class AuthenticationTest extends TestCase
 
     public function test_authenticated_user_can_access_home()
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create([
+            'email_verified_at' => now(),
+        ]);
 
         $response = $this->actingAs($user)->get(route('home'));
 
@@ -137,7 +139,9 @@ class AuthenticationTest extends TestCase
 
     public function test_user_can_view_profile()
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create([
+            'email_verified_at' => now(),
+        ]);
 
         $response = $this->actingAs($user)->get(route('profile.edit'));
 
@@ -160,7 +164,8 @@ class AuthenticationTest extends TestCase
     {
         $user = User::factory()->create([
             'name' => 'Old Name',
-            'email' => 'old@example.com'
+            'email' => 'old@example.com',
+            'email_verified_at' => now()
         ]);
 
         $updateData = [
@@ -180,7 +185,7 @@ class AuthenticationTest extends TestCase
     public function test_profile_update_validates_email_uniqueness()
     {
         $user1 = User::factory()->create(['email' => 'user1@example.com']);
-        $user2 = User::factory()->create(['email' => 'user2@example.com']);
+        $user2 = User::factory()->create(['email' => 'user2@example.com', 'email_verified_at' => now()]);
 
         $updateData = [
             'name' => 'User 2',
@@ -195,7 +200,8 @@ class AuthenticationTest extends TestCase
     public function test_user_can_change_password()
     {
         $user = User::factory()->create([
-            'password' => Hash::make('old-password')
+            'password' => Hash::make('old-password'),
+            'email_verified_at' => now()
         ]);
 
         $passwordData = [
@@ -215,7 +221,8 @@ class AuthenticationTest extends TestCase
     public function test_password_change_validates_current_password()
     {
         $user = User::factory()->create([
-            'password' => Hash::make('old-password')
+            'password' => Hash::make('old-password'),
+            'email_verified_at' => now()
         ]);
 
         $passwordData = [
