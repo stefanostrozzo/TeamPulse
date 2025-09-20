@@ -8,18 +8,18 @@
             </span>
             <input
                 type="text"
-                class="search-input w-full bg-gray-700 rounded-xl pl-11 pr-4 py-2 text-sm text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-500"
+                class="search-input w-full bg-gray-700 rounded-xl pl-11 pr-4 py-2 text-sm text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#07b4f6]"
                 :placeholder="placeholder"
             />
         </div>
         <div class="topbar-actions flex items-center gap-3">
-            <button class="command-palette-btn flex items-center gap-2 bg-gray-700 text-gray-100 rounded-xl px-3 py-2 text-sm hover:bg-violet-600 transition" @click="$emit('command')">
+            <button class="command-palette-btn flex items-center gap-2 bg-gray-700 text-gray-100 rounded-xl px-3 py-2 text-sm hover:bg-[#07b4f6] transition" @click="$emit('command')">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 17.25v1.007a3 3 0 01-.879 2.121L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m-6 0h6m-6 0a3 3 0 01-3-3V8.25a3 3 0 013-3h6a3 3 0 013 3v6a3 3 0 01-3 3m-6 0h6" />
                 </svg>
                 <span>Command Palette</span>
             </button>
-            <button class="action-btn w-10 h-10 rounded-xl bg-gray-700 text-gray-100 hover:bg-violet-600 transition relative" @click="$emit('toggle-notifications')">
+            <button class="action-btn w-10 h-10 rounded-xl bg-gray-700 text-gray-100 hover:bg-[#07b4f6] transition relative" @click="$emit('toggle-notifications')">
                 <span class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-[10px] flex items-center justify-center">{{ notifications }}</span>
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
                     <path d="M5.25 7.5A6.75 6.75 0 0112 0.75 6.75 6.75 0 0118.75 7.5v3.818c0 .512.203 1.003.564 1.364l1.061 1.061A1.5 1.5 0 0119.318 15H4.682a1.5 1.5 0 01-1.057-2.557l1.061-1.061c.361-.361.564-.852.564-1.364V7.5z" />

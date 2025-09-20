@@ -2,8 +2,8 @@
     <button
         type="button"
         :class="[
-            'nav-item w-full flex items-center px-3 py-3 rounded-xl text-gray-300 hover:bg-violet-500/15 hover:text-violet-300 transition',
-            { 'bg-violet-500/20 text-violet-400 font-medium': active },
+            'nav-item w-full flex items-center px-3 py-3 rounded-xl text-gray-300 hover:bg-[#07b4f6]/15 hover:text-[#07b4f6] transition',
+            { 'bg-[#07b4f6]/20 text-[#07b4f6] font-medium': active },
         ]"
         @click="$emit('click')"
     >
@@ -13,7 +13,7 @@
         <div v-if="!collapsed" class="nav-text whitespace-nowrap overflow-hidden">
             <slot />
         </div>
-        <span v-if="!collapsed && badge" class="badge ml-auto bg-violet-600 text-white px-2 py-0.5 rounded-full text-xs font-semibold">
+        <span v-if="!collapsed && badge" class="badge ml-auto bg-[#07b4f6] text-white px-2 py-0.5 rounded-full text-xs font-semibold">
             {{ badge }}
         </span>
         <div v-if="$slots.right" class="ml-auto flex-shrink-0">
