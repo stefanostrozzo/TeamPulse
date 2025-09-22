@@ -13,9 +13,6 @@ import NotificationDrawer from '@/Components/Drawer/NotificationDrawer.vue';
 // Importa il componente del profilo
 import UpdateProfileInformationForm from '@/Pages/Profile/Partials/UpdateProfileInformationForm.vue';
 
-//Brute forcing it
-
-
 const props = defineProps({
     activeTab: String,
     mustVerifyEmail: {
