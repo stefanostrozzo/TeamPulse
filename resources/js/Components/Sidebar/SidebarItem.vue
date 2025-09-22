@@ -32,5 +32,3 @@ defineProps({
 })
 defineEmits(['click'])
 </script>
-
-

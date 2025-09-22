@@ -6,7 +6,7 @@ import SidebarContainer from '@/Components/Sidebar/SidebarContainer.vue';
 import SidebarLogo from '@/Components/Sidebar/SidebarLogo.vue';
 import SidebarSection from '@/Components/Sidebar/SidebarSection.vue';
 import SidebarItem from '@/Components/Sidebar/SidebarItem.vue';
-import ApplicationLogo from '@/Components/ApplicationLogo.vue';
+import ApplicationLogo from '@/Components/Items/ApplicationLogo.vue';
 import Topbar from '@/Components/Topbar/Topbar.vue';
 import NotificationDrawer from '@/Components/Drawer/NotificationDrawer.vue';
 
