@@ -13,6 +13,9 @@ import NotificationDrawer from '@/Components/Drawer/NotificationDrawer.vue';
 // Importa il componente del profilo
 import UpdateProfileInformationForm from '@/Pages/Profile/Partials/UpdateProfileInformationForm.vue';
 
+//TEST TO BRUTE FORCE PUSH
+
+
 const props = defineProps({
     activeTab: String,
     mustVerifyEmail: {
