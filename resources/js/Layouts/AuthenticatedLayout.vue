@@ -13,7 +13,7 @@ import NotificationDrawer from '@/Components/Drawer/NotificationDrawer.vue';
 // Importa il componente del profilo
 import UpdateProfileInformationForm from '@/Pages/Profile/Partials/UpdateProfileInformationForm.vue';
 
-//Brute forcing it
+//Brute forcing
 
 
 const props = defineProps({
