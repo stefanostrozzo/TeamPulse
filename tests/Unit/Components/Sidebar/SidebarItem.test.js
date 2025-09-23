@@ -25,8 +25,8 @@ describe('SidebarItem', () => {
       }
     })
 
-    expect(wrapper.find('.nav-item').classes()).toContain('bg-violet-500/20')
-    expect(wrapper.find('.nav-item').classes()).toContain('text-violet-400')
+    expect(wrapper.find('.nav-item').classes()).toContain('bg-[#07b4f6]/20')
+    expect(wrapper.find('.nav-item').classes()).toContain('text-[#07b4f6]')
     expect(wrapper.find('.nav-item').classes()).toContain('font-medium')
   })
 
@@ -40,7 +40,7 @@ describe('SidebarItem', () => {
     })
 
     expect(wrapper.find('.badge').text()).toBe('5')
-    expect(wrapper.find('.badge').classes()).toContain('bg-violet-600')
+    expect(wrapper.find('.badge').classes()).toContain('bg-[#07b4f6]')
   })
 
   it('hides badge when collapsed', () => {
@@ -103,8 +103,8 @@ describe('SidebarItem', () => {
     })
 
     const navItem = wrapper.find('.nav-item')
-    expect(navItem.classes()).toContain('hover:bg-violet-500/15')
-    expect(navItem.classes()).toContain('hover:text-violet-300')
+    expect(navItem.classes()).toContain('hover:bg-[#07b4f6]/15')
+    expect(navItem.classes()).toContain('hover:text-[#07b4f6]')
   })
 
   it('maintains icon size when collapsed', () => {

@@ -6,7 +6,7 @@ import SidebarContainer from '@/Components/Sidebar/SidebarContainer.vue';
 import SidebarLogo from '@/Components/Sidebar/SidebarLogo.vue';
 import SidebarSection from '@/Components/Sidebar/SidebarSection.vue';
 import SidebarItem from '@/Components/Sidebar/SidebarItem.vue';
-import ApplicationLogo from '@/Components/ApplicationLogo.vue';
+import ApplicationLogo from '@/Components/Items/ApplicationLogo.vue';
 import Topbar from '@/Components/Topbar/Topbar.vue';
 import NotificationDrawer from '@/Components/Drawer/NotificationDrawer.vue';
 
@@ -15,6 +15,9 @@ import ProfileComponent from '@/Pages/Profile/Edit.vue';
 
 //Import Projects page
 import ProjectComponent from '@/Pages/Projects/Index.vue';
+
+//Brute forcing
+
 
 const props = defineProps({
     activeTab: String,
@@ -149,7 +152,7 @@ function logout() {
 
             <div class="sidebar-footer px-3 py-4 border-t border-gray-700">
                 <div class="user-profile flex items-center px-2 py-2 rounded-xl hover:bg-gray-700/60" :class="{ 'justify-center': collapsed }"  @click="go('profile')">
-                    <div class="user-avatar w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center font-semibold" :class="{ 'mr-3': !collapsed }">
+                    <div class="user-avatar w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-[#07b4f6] flex items-center justify-center font-semibold" :class="{ 'mr-3': !collapsed }">
                         {{ user?.name?.substring(0,1) ?? 'U' }}
                     </div>
                     <div class="user-info min-w-0" v-if="!collapsed">

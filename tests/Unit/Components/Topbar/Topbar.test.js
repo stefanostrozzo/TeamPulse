@@ -93,7 +93,7 @@ describe('Topbar', () => {
     expect(notificationBtn.classes()).toContain('rounded-xl')
     expect(notificationBtn.classes()).toContain('bg-gray-700')
     expect(notificationBtn.classes()).toContain('text-gray-100')
-    expect(notificationBtn.classes()).toContain('hover:bg-violet-600')
+    expect(notificationBtn.classes()).toContain('hover:bg-[#07b4f6]')
   })
 
   it('renders search icon', () => {
@@ -124,7 +124,7 @@ describe('Topbar', () => {
     const commandBtn = wrapper.find('.command-palette-btn')
     const notificationBtn = wrapper.find('.action-btn')
 
-    expect(commandBtn.classes()).toContain('hover:bg-violet-600')
-    expect(notificationBtn.classes()).toContain('hover:bg-violet-600')
+    expect(commandBtn.classes()).toContain('hover:bg-[#07b4f6]')
+    expect(notificationBtn.classes()).toContain('hover:bg-[#07b4f6]')
   })
 })

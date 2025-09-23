@@ -17,7 +17,7 @@
                 </slot>
             </div>
             <div class="drawer-footer p-4 border-t border-gray-700 text-center">
-                <button class="mark-all-read text-violet-400" type="button" @click="$emit('mark-all-read')">Segna tutte come lette</button>
+                <button class="mark-all-read text-[#07b4f6]" type="button" @click="$emit('mark-all-read')">Segna tutte come lette</button>
             </div>
         </div>
         <div
