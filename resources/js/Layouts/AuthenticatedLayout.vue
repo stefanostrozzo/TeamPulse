@@ -10,8 +10,11 @@ import ApplicationLogo from '@/Components/ApplicationLogo.vue';
 import Topbar from '@/Components/Topbar/Topbar.vue';
 import NotificationDrawer from '@/Components/Drawer/NotificationDrawer.vue';
 
-// Importa il componente del profilo
-import UpdateProfileInformationForm from '@/Pages/Profile/Partials/UpdateProfileInformationForm.vue';
+// Import profile component
+import ProfileComponent from '@/Pages/Profile/Edit.vue';
+
+//Import Projects page
+import ProjectComponent from '@/Pages/Projects/Index.vue';
 
 const props = defineProps({
     activeTab: String,
@@ -31,7 +34,13 @@ const collapsed = ref(false);
 const notificationOpen = ref(false);
 const notificationsCount = ref(0);
 
-const user = computed(() => page.props.auth?.user ?? null);
+const user = ref(page.props.auth?.user ?? null);
+
+const unsubscribe = router.on('success', (event) => {
+    if (event.detail.page.props.auth?.user) {
+        user.value = event.detail.page.props.auth.user;
+    }
+});
 
 function go(tab) {
     emit('change-tab', tab);
@@ -66,7 +75,7 @@ function logout() {
                         </template>
                         Dashboard
                     </SidebarItem>
-                    <SidebarItem :active="props.activeTab === 'progetti'" :collapsed="collapsed" badge="" @click="go('progetti')">
+                    <SidebarItem :active="props.activeTab === 'progetti'" :collapsed="collapsed" badge="" @click="go('projects')">
                         <template #icon>
                             <i class="fas fa-project-diagram"></i>
                         </template>
@@ -173,11 +182,12 @@ function logout() {
                     <slot />
                 </div>
                 
-                <div v-else-if="props.activeTab === 'profile'" class="max-w-4xl mx-auto">
-                    <UpdateProfileInformationForm 
-                        :must-verify-email="mustVerifyEmail" 
-                        :status="status" 
-                    />
+                <div v-else-if="props.activeTab === 'profile'" class="max-w-7xl mx-auto space-y-6">
+                   <ProfileComponent></ProfileComponent>
+                </div>
+
+                <div v-else-if="props.activeTab === 'projects'" class="max-w-4xl mx-auto">
+                   
                 </div>
                 
                 <div v-else>
