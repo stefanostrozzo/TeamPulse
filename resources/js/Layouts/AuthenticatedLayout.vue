@@ -13,12 +13,6 @@ import NotificationDrawer from '@/Components/Drawer/NotificationDrawer.vue';
 // Import profile component
 import ProfileComponent from '@/Pages/Profile/Edit.vue';
 
-//Import Projects page
-import ProjectComponent from '@/Pages/Projects/Index.vue';
-
-//Brute forcing
-
-
 const props = defineProps({
     activeTab: String,
     mustVerifyEmail: {
