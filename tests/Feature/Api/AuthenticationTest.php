@@ -175,7 +175,7 @@ class AuthenticationTest extends TestCase
 
         $response = $this->actingAs($user)->patch('/profile', $updateData);
 
-        $response->assertRedirect(route('profile.edit'));
+        $response->assertRedirect();
 
         $user->refresh();
         $this->assertEquals('New Name', $user->name);

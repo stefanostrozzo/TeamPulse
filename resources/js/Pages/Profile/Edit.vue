@@ -1,56 +1,25 @@
 <script setup>
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import DeleteUserForm from './Partials/DeleteUserForm.vue';
-import UpdatePasswordForm from './Partials/UpdatePasswordForm.vue';
-import UpdateProfileInformationForm from './Partials/UpdateProfileInformationForm.vue';
-import { Head } from '@inertiajs/vue3';
+import UpdateProfileInformationForm from '@/Pages/Profile/Components/UpdateProfileInformationForm.vue';
+import UpdatePasswordForm from '@/Pages/Profile/Components/UpdatePasswordForm.vue';
+import DeleteUserForm from '@/Pages/Profile/Components/DeleteUserForm.vue';
+import { Link, useForm, usePage, router } from '@inertiajs/vue3';
 
-defineProps({
-    mustVerifyEmail: {
-        type: Boolean,
-    },
-    status: {
-        type: String,
-    },
-});
 </script>
 
 <template>
-    <Head title="Profile" />
+ <div class="bg-gray-800 p-6 rounded-lg shadow">
+    <UpdateProfileInformationForm 
+        :must-verify-email="mustVerifyEmail" 
+        :status="status" 
+        class="max-w-xl"
+    />
+</div>
 
-    <AuthenticatedLayout>
-        <template #header>
-            <h2
-                class="text-xl font-semibold leading-tight text-gray-800 dark:text-white"
-            >
-                Profilo
-            </h2>
-        </template>
+<div class="bg-gray-800 p-6 rounded-lg shadow">
+    <UpdatePasswordForm class="max-w-xl" />
+</div>
 
-        <div class="py-12">
-            <div class="mx-auto max-w-7xl space-y-6 sm:px-6 lg:px-8">
-                <div
-                    class="bg-white p-4 shadow sm:rounded-lg sm:p-8 dark:bg-gray-800 dark:text-white"
-                >
-                    <UpdateProfileInformationForm
-                        :must-verify-email="mustVerifyEmail"
-                        :status="status"
-                        class="max-w-xl"
-                    />
-                </div>
-
-                <div
-                    class="bg-white p-4 shadow sm:rounded-lg sm:p-8 dark:bg-gray-800 dark:text-white"
-                >
-                    <UpdatePasswordForm class="max-w-xl" />
-                </div>
-
-                <div
-                    class="bg-white p-4 shadow sm:rounded-lg sm:p-8 dark:bg-gray-800 dark:text-white"
-                >
-                    <DeleteUserForm class="max-w-xl" />
-                </div>
-            </div>
-        </div>
-    </AuthenticatedLayout>
+<div class="bg-gray-800 p-6 rounded-lg shadow">
+    <DeleteUserForm class="max-w-xl" />
+</div>
 </template>
