@@ -1,5 +1,5 @@
 <template>
-    <div class="topbar bg-gray-800 border-b border-gray-700 px-6 py-3 flex items-center justify-between">
+    <div class="topbar bg-gray-800 border-b border-gray-700 px-6 pt-4 pb-3 flex items-center justify-between">
         <div class="search-container relative w-full max-w-xl">
             <span class="search-icon absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">

@@ -11,7 +11,7 @@ class PermissionSeeder extends Seeder
 {
     public function run(): void
     {
-        // Crea i permessi
+        //Create permissions
         $permissions = [
             'manage users',
             'manage roles',
@@ -24,11 +24,11 @@ class PermissionSeeder extends Seeder
             Permission::firstOrCreate(['name' => $permission]);
         }
 
-        // Crea i ruoli
+        //Create roles
         $adminRole = Role::firstOrCreate(['name' => 'admin']);
         $userRole = Role::firstOrCreate(['name' => 'user']);
 
-        // Assegna permessi ai ruoli
+        //Assign permissions to roles
         $adminRole->givePermissionTo([
             'manage users',
             'manage roles',
@@ -40,11 +40,5 @@ class PermissionSeeder extends Seeder
         $userRole->givePermissionTo([
             'view users',
         ]);
-
-        // Assegna ruolo admin al primo utente (se esiste)
-        $firstUser = User::first();
-        if ($firstUser) {
-            $firstUser->assignRole('admin');
-        }
     }
 } 
