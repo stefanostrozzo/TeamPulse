@@ -13,7 +13,7 @@ return new class extends Migration
             $table->string('name');
             $table->string('email')->nullable();
             $table->string('phone')->nullable();
-            $table->string('company')->nullable(); 
+            $table->string('business_name')->nullable(); 
             $table->string('address')->nullable();
             $table->string('city')->nullable();
             $table->string('country')->nullable();

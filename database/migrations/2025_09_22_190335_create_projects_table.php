@@ -11,28 +11,31 @@ return new class extends Migration
 
         Schema::create('projects', function (Blueprint $table) {
             $table->id();
+            //Project basic details
             $table->string('name');
             $table->text('description')->nullable();
 
-            $table->foreignId('client_id')
+            $table->foreignId('customer_id')
                 ->nullable()
                 ->constrained('customers')
                 ->cascadeOnUpdate()
                 ->nullOnDelete();
 
-            $table->enum('status', ['active', 'completed', 'on-hold', 'archived'])->default('active');
-            $table->enum('priority', ['low', 'medium', 'high'])->default('medium');
+            //Project status and priority, in the future this could be references to separate tables
+            $table->enum('status', ['active', 'completed', 'on-hold', 'archived'])->default('on-hold');
+            $table->enum('priority', ['low', 'medium', 'high'])->default('low');
 
+            //Project timeline
             $table->date('start_date')->nullable();
             $table->date('end_date')->nullable();
 
-            $table->unsignedTinyInteger('progress')->default(0);
-            $table->string('color')->nullable();
-            $table->json('tags')->nullable();
+            // Progress in percentage
+            $table->unsignedTinyInteger('progress')->default(0)->max(100);
 
             $table->timestamps();
         });
 
+        //Pivot table for project members with different roles managed by Spatie
         Schema::create('project_members', function (Blueprint $table) {
             $table->id();
 
@@ -46,16 +49,30 @@ return new class extends Migration
                 ->cascadeOnUpdate()
                 ->cascadeOnDelete();
 
-            $table->string('role')->nullable();
+            $table->foreignId('role_id')
+                ->nullable()
+                ->constrained('roles') 
+                ->cascadeOnUpdate()
+                ->nullOnDelete();
             
             $table->timestamps();
 
-            $table->unique(['project_id', 'user_id']); 
+            $table->unique(['project_id', 'user_id', 'role_id']); 
         });
     }
 
     public function down(): void
     {
+        Schema::table('project_members', function (Blueprint $table) {
+            $table->dropForeign(['project_id']); 
+            $table->dropForeign(['user_id']); 
+            $table->dropForeign(['role_id']); 
+        });
+
+        Schema::table('projects', function (Blueprint $table) {
+            $table->dropForeign(['customer_id']); 
+        });
+        
         Schema::dropIfExists('project_members');
         Schema::dropIfExists('projects');
     }
