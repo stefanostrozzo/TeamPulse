@@ -10,7 +10,7 @@ import '@fortawesome/fontawesome-free/css/all.css'
 const appName = import.meta.env.VITE_APP_NAME || 'TeamPulse';
 
 createInertiaApp({
-    title: (title) => `${title} - ${appName}`,
+    title: (title) => `${appName}`,
     resolve: (name) =>
         resolvePageComponent(
             `./Pages/${name}.vue`,

@@ -64,11 +64,11 @@ const updatePassword = () => {
                     class="mt-1 block w-full pr-10"
                     autocomplete="current-password"
                 />
-                <button 
-                    type="button" 
-                    @click="showPassword = !showPassword" 
+                <button
+                    type="button"
+                    @click="showPassword = !showPassword"
                     tabindex="-1"
-                    class="absolute right-3 top-8 text-gray-400 hover:text-indigo-500 focus:outline-none"
+                    class="absolute right-3 top-6 text-gray-400 hover:text-indigo-500 focus:outline-none"
                 >
                     <FontAwesomeIcon :icon="showPassword ? faEyeSlash : faEye" />
                 </button>
@@ -90,11 +90,11 @@ const updatePassword = () => {
                     autocomplete="new-password"
                 />
 
-                <button 
-                    type="button" 
-                    @click="showNewPassword = !showNewPassword" 
+                <button
+                    type="button"
+                    @click="showNewPassword = !showNewPassword"
                     tabindex="-1"
-                    class="absolute right-3 top-8 text-gray-400 hover:text-indigo-500 focus:outline-none"
+                    class="absolute right-3 top-6 text-gray-400 hover:text-indigo-500 focus:outline-none"
                 >
                     <FontAwesomeIcon :icon="showNewPassword ? faEyeSlash : faEye" />
                 </button>
@@ -115,11 +115,11 @@ const updatePassword = () => {
                     autocomplete="new-password"
                 />
 
-                <button 
-                    type="button" 
-                    @click="showNewPasswordConfirmation = !showNewPasswordConfirmation" 
+                <button
+                    type="button"
+                    @click="showNewPasswordConfirmation = !showNewPasswordConfirmation"
                     tabindex="-1"
-                    class="absolute right-3 top-8 text-gray-400 hover:text-indigo-500 focus:outline-none"
+                    class="absolute right-3 top-6 text-gray-400 hover:text-indigo-500 focus:outline-none"
                 >
                     <FontAwesomeIcon :icon="showNewPasswordConfirmation ? faEyeSlash : faEye" />
                 </button>
