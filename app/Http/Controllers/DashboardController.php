@@ -27,7 +27,7 @@ class DashboardController extends Controller
             'mustVerifyEmail' => $request->user()->hasVerifiedEmail(),
             'status' => session('status'),
 
-            // Projects data: Loaded lazily only when the 'progetti' tab is active
+            // Projects data: Loaded lazily only when the 'projects' tab is active
             'projects' => Inertia::optional(function () use ($activeTab, $request) {
                 if ($activeTab !== 'projects') return null;
 

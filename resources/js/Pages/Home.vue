@@ -79,14 +79,15 @@ function logout() {
             </nav>
 
             <div class="sidebar-footer px-3 py-4 border-t border-gray-700">
-                <div class="user-profile flex items-center px-2 py-2 rounded-xl hover:bg-gray-700/60" :class="{ 'justify-center': collapsed }" @click="navigateTo('profile')">
-                    <div class="user-avatar w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-[#07b4f6] flex items-center justify-center font-semibold">
-                        {{ user?.name?.substring(0,1) }}
-                    </div>
-                    <div v-if="!collapsed" class="ml-3 min-w-0">
-                        <div class="text-sm font-medium truncate">{{ user?.name }}</div>
-                    </div>
-                </div>
+                <SidebarItem
+                    :active="false"
+                    :collapsed="collapsed"
+                    @click="logout"
+                    class="text-red-400 hover:text-red-300 hover:bg-red-400/10"
+                >
+                    <template #icon><i class="fas fa-sign-out-alt"></i></template>
+                    Esci
+                </SidebarItem>
             </div>
         </SidebarContainer>
 

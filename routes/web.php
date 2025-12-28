@@ -4,14 +4,10 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Admin\UserManagementController;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
-use App\Models\User;
-use Spatie\Permission\Models\Role;
-use Spatie\Permission\Models\Permission;
 
 
 //Main route for the SPA application
-Route::get('/home', [DashboardController::class, 'index'])
+Route::get('/', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])
     ->name('home');
 
