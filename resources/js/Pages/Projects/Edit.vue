@@ -25,7 +25,6 @@ const emit = defineEmits(['close']);
 const form = useForm({
     name: '',
     description: '',
-    customer_id: '',
     status: 'planning',
     priority: 'medium',
     start_date: '',

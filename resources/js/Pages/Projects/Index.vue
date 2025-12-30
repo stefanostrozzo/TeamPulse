@@ -63,7 +63,8 @@ const closeProjectModal = () => {
                 v-for="project in (projects.data || projects)"
                 :key="project.id"
                 :project="project"
-                @edit="editProject(project)"
+                @open="handleOpenProject"
+                @edit="editProject"
             />
 
             <Modal :show="isModalOpen" @close="closeProjectModal" maxWidth="3xl">

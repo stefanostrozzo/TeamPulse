@@ -8,6 +8,8 @@ defineProps({
     }
 });
 
+defineEmits(['open', 'edit']);
+
 const PROJECT_STATUSES = {
     'active': { label: 'Attivo', color: 'bg-green-500' },
     'completed': { label: 'Completato', color: 'bg-blue-500' },
@@ -24,8 +26,8 @@ const PROJECT_PRIORITIES = {
 </script>
 
 <template>
-    <div class="project-card group bg-gray-800 rounded-xl border border-gray-700 hover:border-[#07b4f6]/30 transition-all duration-300 hover:shadow-lg hover:shadow-[#07b4f6]/5">
-        <Link :href="route('project.show', project.id)" class="block p-5">
+    <div @click="$emit('open', project)" @contextmenu.prevent="$emit('edit', project)" class="project-card group bg-gray-800 rounded-xl border border-gray-700 hover:border-[#07b4f6]/30 transition-all duration-300 hover:shadow-lg hover:shadow-[#07b4f6]/5">
+        <div class="block p-5">
             <!-- Header -->
             <div class="flex justify-between items-start mb-3">
                 <div class="flex items-center space-x-2">
@@ -88,6 +90,6 @@ const PROJECT_PRIORITIES = {
                     </div>
                 </div>
             </div>
-        </Link>
+        </div>
     </div>
 </template>

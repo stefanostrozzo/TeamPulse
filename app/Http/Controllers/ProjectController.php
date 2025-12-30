@@ -46,7 +46,6 @@ class ProjectController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'client_id' => 'required|exists:customers,id',
             'status' => 'required|string',
             'priority' => 'required|string',
             'start_date' => 'nullable|date',
