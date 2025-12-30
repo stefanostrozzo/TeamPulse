@@ -14,7 +14,6 @@ defineEmits(['toggle-sidebar', 'open-notifications']);
     <div class="flex-1 flex flex-col min-w-0 overflow-hidden text-gray-900 dark:text-gray-100">
         <main class="flex-1 p-6 overflow-y-auto bg-gray-50 dark:bg-gray-950">
             <div class="max-w-9/10 mx-auto">
-
                 <div>
                     <slot />
                 </div>

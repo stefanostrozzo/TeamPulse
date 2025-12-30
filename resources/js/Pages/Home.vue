@@ -13,11 +13,12 @@ import NotificationDrawer from '@/Components/Drawer/NotificationDrawer.vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import UserManagementPanel from '@/Components/Admin/UserManagementPanel.vue';
 import ProfileEdit from '@/Pages/Profile/Edit.vue';
+import ProjectIndex from '@/Pages/Projects/Index.vue';
+import DashboardIndex from '@/Pages/Dashboard/Index.vue';
 
 const page = usePage();
 const collapsed = ref(false);
 const notificationOpen = ref(false);
-const user = computed(() => page.props.auth?.user ?? null);
 
 // We read the current tab from the URL to highlight the sidebar icons
 const currentTab = computed(() => page.props.activeTab || 'dashboard');
@@ -101,11 +102,11 @@ function logout() {
                     @open-notifications="notificationOpen = true"
                 >
                     <div v-if="currentTab === 'dashboard'">
-                        <h1 class="text-2xl font-bold">Benvenuto, {{ user?.name }}</h1>
+                        <DashboardIndex/>
                     </div>
 
                     <div v-else-if="currentTab === 'projects'">
-                        <h1 class="text-2xl font-bold">I tuoi Progetti</h1>
+                        <ProjectIndex/>
                     </div>
 
                     <div v-else-if="currentTab === 'profile'">
