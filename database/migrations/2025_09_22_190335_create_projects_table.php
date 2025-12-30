@@ -15,12 +15,6 @@ return new class extends Migration
             $table->string('name');
             $table->text('description')->nullable();
 
-            $table->foreignId('customer_id')
-                ->nullable()
-                ->constrained('customers')
-                ->cascadeOnUpdate()
-                ->nullOnDelete();
-
             //Project status and priority, in the future this could be references to separate tables
             $table->enum('status', ['active', 'completed', 'on-hold', 'archived'])->default('on-hold');
             $table->enum('priority', ['low', 'medium', 'high'])->default('low');
@@ -51,28 +45,24 @@ return new class extends Migration
 
             $table->foreignId('role_id')
                 ->nullable()
-                ->constrained('roles') 
+                ->constrained('roles')
                 ->cascadeOnUpdate()
                 ->nullOnDelete();
-            
+
             $table->timestamps();
 
-            $table->unique(['project_id', 'user_id', 'role_id']); 
+            $table->unique(['project_id', 'user_id', 'role_id']);
         });
     }
 
     public function down(): void
     {
         Schema::table('project_members', function (Blueprint $table) {
-            $table->dropForeign(['project_id']); 
-            $table->dropForeign(['user_id']); 
-            $table->dropForeign(['role_id']); 
+            $table->dropForeign(['project_id']);
+            $table->dropForeign(['user_id']);
+            $table->dropForeign(['role_id']);
         });
 
-        Schema::table('projects', function (Blueprint $table) {
-            $table->dropForeign(['customer_id']); 
-        });
-        
         Schema::dropIfExists('project_members');
         Schema::dropIfExists('projects');
     }

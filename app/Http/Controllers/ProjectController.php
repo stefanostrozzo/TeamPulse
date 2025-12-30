@@ -8,14 +8,21 @@ use App\Models\Customer;
 
 class ProjectController extends Controller
 {
-
     /**
      * @param Request $request
-     * @return void
-     *
      */
     public function store(Request $request){
-        //TODO: Data validation + DB storage of info
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'status' => 'required|string',
+            'priority' => 'required|string',
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date',
+            'progress' => 'integer|min:0|max:100',
+        ]);
+
+        Project::create($validated);
     }
 
 
@@ -30,10 +37,27 @@ class ProjectController extends Controller
     /**
      * @param Request $request
      * @param $id
-     * @return void
+     * @return \Illuminate\Http\RedirectResponse
      */
-    public function update(Request $request, $id){
-        //TODO: Based on the id edit the corrisponding record
+    public function update(Request $request, $id)
+    {
+        $project = Project::findOrFail($id);
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'client_id' => 'required|exists:customers,id',
+            'status' => 'required|string',
+            'priority' => 'required|string',
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date',
+            'progress' => 'integer|min:0|max:100',
+        ]);
+
+        $project->update($validated);
+
+        return redirect()->route('home', ['tab' => 'projects'])
+            ->with('status', 'Project updated!');
     }
 
     /**

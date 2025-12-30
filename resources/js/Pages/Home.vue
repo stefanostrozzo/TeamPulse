@@ -106,7 +106,10 @@ function logout() {
                     </div>
 
                     <div v-else-if="currentTab === 'projects'">
-                        <ProjectIndex/>
+                        <ProjectIndex
+                            :projects="page.props.projects"
+                            :projectStats="page.props.stats"
+                        />
                     </div>
 
                     <div v-else-if="currentTab === 'profile'">

@@ -17,10 +17,10 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    Route::post('/projects', [ProjectController::class, 'store'])->name('projects.store');
-    Route::get('/projects/{id}', [ProjectController::class, 'getElement'])->name('projects.show');
-    Route::put('/projects/{id}', [ProjectController::class, 'update'])->name('projects.update');
-    Route::delete('/projects/{id}', [ProjectController::class, 'destroy'])->name('projects.destroy');
+    Route::post('/project', [ProjectController::class, 'store'])->name('project.store');
+    Route::get('/project/{id}', [ProjectController::class, 'getElement'])->name('project.show');
+    Route::put('/project/{id}', [ProjectController::class, 'update'])->name('project.update');
+    Route::delete('/project/{id}', [ProjectController::class, 'destroy'])->name('project.destroy');
 });
 
 //Admin section

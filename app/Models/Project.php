@@ -14,7 +14,6 @@ class Project extends Model
     protected $fillable = [
         'name',
         'description',
-        'client_id',
         'status',
         'priority',
         'start_date',
@@ -31,12 +30,7 @@ class Project extends Model
         'tags' => 'array'
     ];
 
-    // Relazioni
-    public function customer(): BelongsTo
-    {
-        return $this->belongsTo(Customer::class);
-    }
-
+    // Relationship
     public function tasks(): HasMany
     {
         return $this->hasMany(Task::class);
@@ -49,6 +43,7 @@ class Project extends Model
                     ->withTimestamps();
     }
 
+    //Scopes
     public function scopeActive($query)
     {
         return $query->where('status', 'active');
@@ -64,7 +59,7 @@ class Project extends Model
         return $query->where('priority', 'high');
     }
 
-    // Accessori
+    // Accessories
     public function getProgressPercentageAttribute(): float
     {
         return $this->progress ?? 0;
@@ -73,7 +68,7 @@ class Project extends Model
     public function getDaysRemainingAttribute(): ?int
     {
         if (!$this->end_date) return null;
-        
+
         return now()->diffInDays($this->end_date, false);
     }
 

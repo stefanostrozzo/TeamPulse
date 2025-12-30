@@ -28,30 +28,18 @@ class DashboardController extends Controller
             'status' => session('status'),
 
             // Projects data: Loaded lazily only when the 'projects' tab is active
-            'projects' => Inertia::optional(function () use ($activeTab, $request) {
-                if ($activeTab !== 'projects') return null;
+            'projects' => ($activeTab === 'projects')
+                ? Project::with(['tasks', 'members'])->get()
+                : [],
 
-                return Project::with(['client', 'tasks', 'members'])
-                    ->when($request->search, function ($query, $search) {
-                        $query->where('name', 'like', "%{$search}%")
-                            ->orWhere('description', 'like', "%{$search}%");
-                    })
-                    ->when($request->status && $request->status !== 'all', function ($query, $status) {
-                        $query->where('status', $status);
-                    })
-                    ->paginate(12)
-                    ->withQueryString();
-            }),
-
-            // Projects stats: Always available or calculated only for the projects view
-            'stats' => Inertia::optional(fn () => $activeTab === 'projects' ? [
-                'total' => Project::count(),
-                'active' => Project::where('status', 'active')->count(),
+            'stats' => ($activeTab === 'projects') ? [
+                'total'     => Project::count(),
+                'active'    => Project::where('status', 'active')->count(),
                 'completed' => Project::where('status', 'completed')->count(),
-                'overdue' => Project::where('status', 'active')
+                'overdue'   => Project::where('status', 'active')
                     ->where('end_date', '<', now())
                     ->count(),
-            ] : null),
+            ] : null,
 
             // Management Data: Replaces the manual fetch() calls for Permissions tab
             'managementData' => Inertia::optional(function () use ($activeTab, $request) {
