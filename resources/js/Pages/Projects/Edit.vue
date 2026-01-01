@@ -16,7 +16,7 @@ const props = defineProps({
     }
 });
 
-const emit = defineEmits(['close']);
+const emit = defineEmits(['close', 'confirmDelete']);
 
 /**
  * Inertia Form Helper
@@ -109,7 +109,7 @@ const submit = () => {
 
             <div>
                 <label class="block text-sm font-medium text-gray-400 mb-2">Stato</label>
-                <select v-model="form.status" class="w-full bg-gray-800 border-gray-700 rounded-xl text-white focus:border-[#07b4f6] focus:ring-0 transition-all">
+                <select v-model="form.status" class="w-full bg-gray-800 border-gray-700 rounded-xl text-white focus:border-[#07b4f6] focus:ring-0 transition-all" required>
                     <option value="active">Attivo</option>
                     <option value="on-hold">In pausa</option>
                     <option value="completed">Completato</option>
@@ -121,7 +121,7 @@ const submit = () => {
             <div>
                 <label class="block text-sm font-medium text-gray-400 mb-2">Priorità</label>
                 <select v-model="form.priority"
-                        class="w-full bg-gray-800 border-gray-700 rounded-xl text-white focus:border-[#07b4f6] focus:ring-0 transition-all">
+                        class="w-full bg-gray-800 border-gray-700 rounded-xl text-white focus:border-[#07b4f6] focus:ring-0 transition-all" required>
                     <option value="low">Bassa</option>
                     <option value="medium">Media</option>
                     <option value="high">Alta</option>
@@ -151,9 +151,13 @@ const submit = () => {
             </div>
 
             <div class="md:col-span-2 flex justify-end space-x-4 mt-8 pt-6 border-t border-gray-800">
-                <button type="button" @click="$emit('close')"
-                        class="px-6 py-2.5 text-sm font-semibold text-gray-400 hover:text-white transition-colors">
-                    Annulla
+                <button
+                    v-if="project"
+                    type="button"
+                    @click="$emit('confirmDelete', project)"
+                    class="px-6 py-2.5 text-sm font-semibold text-red-500 hover:text-red-400 hover:bg-red-500/10 rounded-xl transition-all"
+                >
+                    <i class="fas fa-trash-alt mr-2"></i> Elimina Progetto
                 </button>
                 <button type="submit" :disabled="form.processing"
                         class="px-8 py-2.5 bg-gradient-to-r from-[#07b4f6] to-cyan-500 text-white rounded-xl font-bold shadow-lg shadow-[#07b4f6]/20 hover:scale-105 active:scale-95 transition-all disabled:opacity-50">

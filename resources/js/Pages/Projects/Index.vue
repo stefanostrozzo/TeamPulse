@@ -5,6 +5,8 @@ import ProjectStats from "@/Pages/Projects/Partials/ProjectStats.vue";
 import ProjectCard from "@/Pages/Projects/Partials/ProjectCard.vue";
 import EditProject from "@/Pages/Projects/Edit.vue";
 import Modal from "@/Components/Items/Modal.vue";
+import Swal from 'sweetalert2';
+import { router } from '@inertiajs/vue3';
 
 const props = defineProps({
     projects: {
@@ -26,15 +28,48 @@ const createProject = () => {
 };
 
 const editProject = (project) => {
+    console.log("Reopen intercettato per il progetto:", project);
     selectedProject.value = project;
     isModalOpen.value = true;
 };
 
 const closeProjectModal = () => {
     isModalOpen.value = false;
-    selectedProject.value = null;
+
+    setTimeout(() => {
+        if (!isModalOpen.value) {
+            // selectedProject.value = null;
+        }
+    }, 300);
 };
 
+const openDeleteConfirmation = (project) => {
+    isModalOpen.value = false;
+
+    Swal.fire({
+        title: 'Sei sicuro?',
+        text: `L'eliminazione di "${project.name}" è permanente.`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#374151',
+        confirmButtonText: 'Sì, elimina',
+        cancelButtonText: 'Annulla',
+        background: '#1f2937',
+        color: '#ffffff',
+    }).then((result) => {
+        if (result.isConfirmed) {
+            router.delete(route('project.destroy', project.id), {
+                onSuccess: () => {
+                    selectedProject.value = null;
+                },
+                preserveScroll: true,
+            });
+        }else if (result.dismiss === Swal.DismissReason.cancel) {
+            editProject(project);
+        }
+    });
+};
 
 </script>
 
@@ -72,6 +107,7 @@ const closeProjectModal = () => {
                     <EditProject
                         :project="selectedProject"
                         @close="closeProjectModal"
+                        @confirmDelete="openDeleteConfirmation"
                     />
                 </div>
             </Modal>
