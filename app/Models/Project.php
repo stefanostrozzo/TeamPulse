@@ -4,14 +4,17 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Traits\BelongsToTeam;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Project extends Model
 {
-    use HasFactory;
+    use HasFactory, BelongsToTeam;
 
     protected $fillable = [
+        'team_id',
         'name',
         'description',
         'status',
@@ -30,17 +33,31 @@ class Project extends Model
         'tags' => 'array'
     ];
 
-    // Relationship
+    /**
+     * Retrieves the tasks of the current project
+     * @return HasMany
+     */
     public function tasks(): HasMany
     {
         return $this->hasMany(Task::class);
     }
 
+    /**
+     *
+     * @return BelongsToMany
+     */
     public function members()
     {
-        return $this->belongsToMany(User::class, 'project_members')
-                    ->withPivot('role_id')
-                    ->withTimestamps();
+        return $this->belongsToMany(User::class, 'project_members')->withTimestamps();
+    }
+
+    /**
+     * Retrives the team of the project
+     * @return BelongsTo
+     */
+    public function team(): BelongsTo
+    {
+        return $this->belongsTo(Team::class);
     }
 
     //Scopes

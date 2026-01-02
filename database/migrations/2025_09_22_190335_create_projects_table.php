@@ -46,7 +46,7 @@ return new class extends Migration
 
             $table->timestamps();
 
-            $table->unique(['project_id', 'user_id', 'role_id']);
+            $table->unique(['project_id', 'user_id']);
         });
     }
 
@@ -55,7 +55,6 @@ return new class extends Migration
         Schema::table('project_members', function (Blueprint $table) {
             $table->dropForeign(['project_id']);
             $table->dropForeign(['user_id']);
-            $table->dropForeign(['role_id']);
         });
 
         Schema::table('projects', function (Blueprint $table) {
