@@ -11,6 +11,7 @@ return new class extends Migration
 
         Schema::create('projects', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('team_id')->constrained()->cascadeOnDelete();
             //Project basic details
             $table->string('name');
             $table->text('description')->nullable();
@@ -43,12 +44,6 @@ return new class extends Migration
                 ->cascadeOnUpdate()
                 ->cascadeOnDelete();
 
-            $table->foreignId('role_id')
-                ->nullable()
-                ->constrained('roles')
-                ->cascadeOnUpdate()
-                ->nullOnDelete();
-
             $table->timestamps();
 
             $table->unique(['project_id', 'user_id', 'role_id']);
@@ -61,6 +56,10 @@ return new class extends Migration
             $table->dropForeign(['project_id']);
             $table->dropForeign(['user_id']);
             $table->dropForeign(['role_id']);
+        });
+
+        Schema::table('projects', function (Blueprint $table) {
+            $table->dropForeign(['team_id']);
         });
 
         Schema::dropIfExists('project_members');

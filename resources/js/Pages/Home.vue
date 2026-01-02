@@ -49,7 +49,7 @@ function logout() {
             </SidebarLogo>
 
             <nav class="sidebar-nav px-3 py-4 flex-1 overflow-y-auto overflow-x-hidden">
-                <SidebarSection title="Gestione progetto" :collapsed="collapsed">
+                <SidebarSection title="Progetto" :collapsed="collapsed">
                     <SidebarItem :active="currentTab === 'dashboard'" :collapsed="collapsed" @click="navigateTo('dashboard')">
                         <template #icon><i class="fas fa-home"></i></template>
                         Home

@@ -47,7 +47,7 @@ const submit = () => {
                 <Link href="/" class="inline-block transition-transform hover:scale-105">
                     <ApplicationLogo class="h-20 w-20 mx-auto" />
                 </Link>
-                <h1 class="mt-4 text-3xl font-bold text-white tracking-tight">Bentornato</h1>
+                <h1 class="mt-4 text-3xl font-bold text-white tracking-tight">Bentornato su Team<span class="text-[#07b4f6]">Pulse</span></h1>
                 <p class="text-gray-400 mt-2 text-sm italic">Accedi per gestire i tuoi progetti</p>
             </div>
 

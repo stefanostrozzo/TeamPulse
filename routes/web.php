@@ -18,9 +18,9 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     Route::post('/project', [ProjectController::class, 'store'])->name('project.store');
-    Route::get('/project/{id}', [ProjectController::class, 'getElement'])->name('project.show');
-    Route::put('/project/{id}', [ProjectController::class, 'update'])->name('project.update');
-    Route::delete('/project/{id}', [ProjectController::class, 'destroy'])->name('project.destroy');
+    Route::get('/project/{project}', [ProjectController::class, 'getElement'])->name('project.show')->middleware('can:view,project');
+    Route::put('/project/{project}', [ProjectController::class, 'update'])->name('project.update')->middleware('can:update,project');
+    Route::delete('/project/{project}', [ProjectController::class, 'destroy'])->name('project.destroy')->middleware('can:delete,project');
 });
 
 //Admin section
