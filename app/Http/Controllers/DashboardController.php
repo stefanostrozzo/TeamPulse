@@ -17,11 +17,20 @@ class DashboardController extends Controller
      */
     public function index(Request $request): Response
     {
+        $user = $request->user();
         $activeTab = $request->get('tab', 'home');
 
         return Inertia::render('Home', [
             // Current active tab state
             'activeTab' => $activeTab,
+
+            'teamsCount' => $user->teams()->count(),
+            'userTeams' => $user->teams()
+                ->with(['users' => function($query) {
+                    $query->select('users.id', 'users.name', 'users.email');
+                }])
+                ->withCount('users')
+                ->get(),
 
             // Basic session and auth status
             'mustVerifyEmail' => $request->user()->hasVerifiedEmail(),

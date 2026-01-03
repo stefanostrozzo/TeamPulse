@@ -15,10 +15,14 @@ defineProps({
     status: { type: String },
 });
 
+const urlParams = new URLSearchParams(window.location.search);
+const token = urlParams.get('token') || null;
+
 const form = useForm({
     email: '',
     password: '',
     remember: false,
+    token: token,
 });
 
 const showPassword = ref(false);
@@ -26,7 +30,9 @@ const showPassword = ref(false);
 const submit = () => {
     form.post(route('login'), {
         onSuccess: () => {
-            router.visit(route('home', { tab: 'dashboard' }));
+            if(!token) {
+                router.visit(route('home', {tab: 'dashboard'}));
+            }
         },
         onFinish: () => form.reset('password'),
     });

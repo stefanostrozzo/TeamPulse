@@ -46,6 +46,10 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
 
+        if ($request->has('token')) {
+            return redirect()->route('teams.accept', ['token' => $request->token]);
+        }
+
         return redirect(route('home', absolute: false));
     }
 }

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { usePage, router } from '@inertiajs/vue3';
 
 // UI Components
@@ -11,14 +11,15 @@ import ApplicationLogo from '@/Components/Items/ApplicationLogo.vue';
 import Topbar from '@/Components/Topbar/Topbar.vue';
 import NotificationDrawer from '@/Components/Drawer/NotificationDrawer.vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import UserManagementPanel from '@/Components/Admin/UserManagementPanel.vue';
 import ProfileEdit from '@/Pages/Profile/Edit.vue';
 import ProjectIndex from '@/Pages/Projects/Index.vue';
 import DashboardIndex from '@/Pages/Dashboard/Index.vue';
+import TeamIndex from '@/Pages/Teams/Index.vue';
 
 const page = usePage();
 const collapsed = ref(false);
 const notificationOpen = ref(false);
+const showCreateTeamModal = ref(false);
 
 // We read the current tab from the URL to highlight the sidebar icons
 const currentTab = computed(() => page.props.activeTab || 'dashboard');
@@ -36,6 +37,17 @@ function navigateTo(tabName) {
 function logout() {
     router.post(route('logout'));
 }
+
+/**
+ * If the user doesn't have a team, redirects to team page to create it
+ */
+onMounted(() => {
+    if (page.props.teamsCount === 0 && page.props.activeTab !== 'teams') {
+        showCreateTeamModal.value = true;
+        navigateTo('teams');
+    }
+});
+
 </script>
 
 <template>
@@ -55,6 +67,11 @@ function logout() {
                         Home
                     </SidebarItem>
 
+                    <SidebarItem :active="currentTab === 'teams'" :collapsed="collapsed" @click="navigateTo('teams')">
+                        <template #icon><i class="fas fa-users"></i></template>
+                        Teams
+                    </SidebarItem>
+
                     <SidebarItem :active="currentTab === 'projects'" :collapsed="collapsed" @click="navigateTo('projects')">
                         <template #icon><i class="fas fa-project-diagram"></i></template>
                         Progetti
@@ -62,16 +79,6 @@ function logout() {
                 </SidebarSection>
 
                 <SidebarSection title="Amministrazione" :collapsed="collapsed">
-                    <SidebarItem
-                        v-if="user?.hasManagementPermissions"
-                        :active="currentTab === 'permissions'"
-                        :collapsed="collapsed"
-                        @click="navigateTo('permissions')"
-                    >
-                        <template #icon><i class="fas fa-shield-alt"></i></template>
-                        Permissions
-                    </SidebarItem>
-
                     <SidebarItem :active="currentTab === 'profile'" :collapsed="collapsed" @click="navigateTo('profile')">
                         <template #icon><i class="fas fa-user"></i></template>
                         Profilo
@@ -105,6 +112,13 @@ function logout() {
                         <DashboardIndex/>
                     </div>
 
+                    <div v-else-if="currentTab === 'teams'">
+                        <TeamIndex
+                            :teams="page.props.userTeams"
+                            :autoOpenCreate="showCreateTeamModal"
+                        />
+                    </div>
+
                     <div v-else-if="currentTab === 'projects'">
                         <ProjectIndex
                             :projects="page.props.projects"
@@ -116,13 +130,6 @@ function logout() {
                         <ProfileEdit
                             :must-verify-email="page.props.mustVerifyEmail"
                             :status="page.props.status"
-                        />
-                    </div>
-
-                    <div v-else-if="currentTab === 'permissions'">
-                        <UserManagementPanel
-                            v-if="page.props.managementData"
-                            :users="page.props.managementData.users"
                         />
                     </div>
                 </AuthenticatedLayout>

@@ -9,11 +9,15 @@ import { ref } from 'vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 
+const urlParams = new URLSearchParams(window.location.search);
+const token = urlParams.get('token') || null;
+
 const form = useForm({
     name: '',
     email: '',
     password: '',
     password_confirmation: '',
+    token: token,
 });
 
 const showPassword = ref(false);
@@ -22,7 +26,9 @@ const showPasswordConfirmation = ref(false);
 const submit = () => {
     form.post(route('register'), {
         onSuccess: () => {
-            router.visit(route('home', { tab: 'dashboard' }));
+            if(!token){
+                router.visit(route('home', { tab: 'dashboard' }));
+            }
         },
         onFinish: () => form.reset('password', 'password_confirmation'),
     });
@@ -49,7 +55,7 @@ const submit = () => {
 
             <div class="bg-gray-900/40 border border-gray-800 backdrop-blur-xl p-8 rounded-md shadow-2xl">
                 <form @submit.prevent="submit" class="space-y-5">
-
+                    <input type="hidden" v-model="form.token">
                     <div>
                         <InputLabel for="name" value="Nome" class="text-gray-300 ml-1" />
                         <div class="relative mt-1">
@@ -145,7 +151,7 @@ const submit = () => {
                 <div class="mt-8 pt-6 border-t border-gray-800 text-center">
                     <p class="text-gray-500 text-sm">
                         Hai già un account?
-                        <Link :href="route('login')" class="text-indigo-400 font-semibold hover:text-indigo-300 underline-offset-4 hover:underline">
+                        <Link :href="route('login',{ token: token })" class="text-indigo-400 font-semibold hover:text-indigo-300 underline-offset-4 hover:underline">
                             Accedi qui
                         </Link>
                     </p>
