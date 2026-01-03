@@ -49,15 +49,15 @@ const statCards = [
 
 <template>
     <div class="project-stats grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div 
-            v-for="card in statCards" 
+        <div
+            v-for="card in statCards"
             :key="card.key"
             class="stat-card group relative bg-gray-800 rounded-xl border border-gray-700 p-6 hover:border-gray-600 transition-all duration-300 hover:transform hover:scale-105"
             :class="card.bgColor"
         >
             <!-- Border hover effect -->
             <div class="absolute inset-0 rounded-xl border-2 border-transparent group-hover:border-white/5 transition-colors"></div>
-            
+
             <div class="flex items-center justify-between">
                 <div>
                     <div class="text-3xl font-bold text-white mb-1">
@@ -67,44 +67,16 @@ const statCards = [
                         {{ card.label }}
                     </div>
                 </div>
-                
+
                 <div class="relative">
                     <!-- Icon background glow -->
                     <div class="absolute inset-0 rounded-full opacity-20 blur-sm" :class="card.color.replace('from-', 'bg-gradient-to-r from-')"></div>
-                    
+
                     <!-- Main icon -->
                     <div class="relative w-12 h-12 rounded-xl flex items-center justify-center" :class="card.bgColor">
                         <i class="text-xl" :class="[card.icon, card.color.replace('from-', 'text-').split(' ')[0]]"></i>
                     </div>
                 </div>
-            </div>
-
-            <!-- Progress bar (solo per completati) -->
-            <div v-if="card.key === 'completed' && stats.total > 0" class="mt-4">
-                <div class="flex justify-between text-xs text-gray-400 mb-1">
-                    <span>Percentuale completamento</span>
-                    <span>{{ Math.round((stats.completed / stats.total) * 100) }}%</span>
-                </div>
-                <div class="w-full bg-gray-700 rounded-full h-2">
-                    <div 
-                        class="h-2 rounded-full transition-all duration-500"
-                        :class="card.color.replace('from-', 'bg-gradient-to-r from-')"
-                        :style="{ width: Math.round((stats.completed / stats.total) * 100) + '%' }"
-                    ></div>
-                </div>
-            </div>
-
-            <!-- Trend indicator (solo per in ritardo) -->
-            <div v-if="card.key === 'overdue' && stats.overdue > 0" class="mt-2">
-                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-500/20 text-red-400">
-                    <i class="fas fa-arrow-up mr-1"></i>
-                    Attenzione
-                </span>
-            </div>
-
-            <!-- Success rate (solo per attivi) -->
-            <div v-if="card.key === 'active' && stats.total > 0" class="mt-2 text-xs text-gray-400">
-                {{ Math.round((stats.active / stats.total) * 100) }}% del totale
             </div>
         </div>
     </div>

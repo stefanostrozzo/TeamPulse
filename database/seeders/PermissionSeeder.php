@@ -13,32 +13,71 @@ class PermissionSeeder extends Seeder
     {
         //Create permissions
         $permissions = [
-            'manage users',
-            'manage roles',
-            'view users',
-            'edit users',
-            'delete users',
+            // Team Management
+            'invite members',
+            'remove members',
+            'create team',
+            'delete team',
+            'change member roles',
+            'manage team settings',
+
+            // Project Management
+            'create projects',
+            'edit projects',
+            'delete projects',
+            'view all projects',
+
+            // Task Management
+            'create tasks',
+            'edit tasks',
+            'delete tasks',
+            'assign tasks',
+            'move tasks',
+            'post comments',
+            'delete comments',
+
+            // Communication & Collaboration
+            'manage watchers',
         ];
 
         foreach ($permissions as $permission) {
             Permission::firstOrCreate(['name' => $permission]);
         }
 
-        //Create roles
-        $adminRole = Role::firstOrCreate(['name' => 'admin']);
-        $userRole = Role::firstOrCreate(['name' => 'user']);
+        //SuperAdmin
+        $superAdmin = Role::firstOrCreate(['name' => 'superadmin']);
 
-        //Assign permissions to roles
-        $adminRole->givePermissionTo([
-            'manage users',
-            'manage roles',
-            'view users',
-            'edit users',
-            'delete users',
+        //Owner role
+        $owner = Role::firstOrCreate(['name' => 'owner']);
+        $owner->givePermissionTo(Permission::all());
+
+        //Manager role
+        $manager = Role::firstOrCreate(['name' => 'manager']);
+        $manager->givePermissionTo([
+            'invite members',
+            'create projects',
+            'edit projects',
+            'view all projects',
+            'create tasks',
+            'edit tasks',
+            'assign tasks',
+            'move tasks',
+            'post comments',
+            'manage watchers',
+            'change member roles'
         ]);
 
-        $userRole->givePermissionTo([
-            'view users',
+        //Member role
+        $member = Role::firstOrCreate(['name' => 'member']);
+        $member->givePermissionTo([
+            'create tasks',
+            'edit tasks',
+            'move tasks',
+            'post comments',
         ]);
+
+        //Guest role (can only view)
+        $guest = Role::firstOrCreate(['name' => 'guest']);
+        $guest->givePermissionTo();
     }
-} 
+}

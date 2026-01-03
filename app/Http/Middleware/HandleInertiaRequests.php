@@ -34,8 +34,9 @@ class HandleInertiaRequests extends Middleware
             ...parent::share($request),
             'auth' => [
                 'user' => $user ? array_merge(
-                    $user->only(['id', 'name', 'email']),
+                    $user->only(['id', 'name', 'email', 'current_team_id']),
                     [
+                        'teams' => $user->teams,
                         'roles' => $user->getRoleNames(),
                         'permissions' => $user->getAllPermissions()->pluck('name'),
                         'hasManagementPermissions' => $user->can('manage users') || $user->can('manage roles'),
@@ -50,7 +51,7 @@ class HandleInertiaRequests extends Middleware
             // Carica i dati solo per la pagina home o admin
             $currentRoute = $request->route();
             $routeName = $currentRoute ? $currentRoute->getName() : '';
-            
+
             if (in_array($routeName, ['home', 'admin.users']) || $request->is('home')) {
                 $shared['managementData'] = [
                     'users' => \App\Models\User::with('roles', 'permissions')->get(),

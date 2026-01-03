@@ -10,6 +10,7 @@ return new class extends Migration
     {
         Schema::create('tasks', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('team_id')->constrained()->cascadeOnDelete();
 
             // Foreign key to projects table
             $table->foreignId('project_id')
@@ -62,6 +63,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('tasks', function (Blueprint $table) {
+            $table->dropForeign(['team_id']);
             $table->dropForeign(['project_id']);
             $table->dropForeign(['assignee_id']);
             $table->dropForeign(['task_parent_id']);

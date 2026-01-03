@@ -1,1 +1,6 @@
 @import "tailwindcss";
+@import "@fortawesome/fontawesome-free/css/all.css";
+
+.swal2-container {
+    z-index: 99999 !important;
+}

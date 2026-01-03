@@ -4,17 +4,19 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Traits\BelongsToTeam;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Project extends Model
 {
-    use HasFactory;
+    use HasFactory, BelongsToTeam;
 
     protected $fillable = [
+        'team_id',
         'name',
         'description',
-        'client_id',
         'status',
         'priority',
         'start_date',
@@ -31,24 +33,34 @@ class Project extends Model
         'tags' => 'array'
     ];
 
-    // Relazioni
-    public function customer(): BelongsTo
-    {
-        return $this->belongsTo(Customer::class);
-    }
-
+    /**
+     * Retrieves the tasks of the current project
+     * @return HasMany
+     */
     public function tasks(): HasMany
     {
         return $this->hasMany(Task::class);
     }
 
+    /**
+     *
+     * @return BelongsToMany
+     */
     public function members()
     {
-        return $this->belongsToMany(User::class, 'project_members')
-                    ->withPivot('role_id')
-                    ->withTimestamps();
+        return $this->belongsToMany(User::class, 'project_members')->withTimestamps();
     }
 
+    /**
+     * Retrives the team of the project
+     * @return BelongsTo
+     */
+    public function team(): BelongsTo
+    {
+        return $this->belongsTo(Team::class);
+    }
+
+    //Scopes
     public function scopeActive($query)
     {
         return $query->where('status', 'active');
@@ -64,7 +76,7 @@ class Project extends Model
         return $query->where('priority', 'high');
     }
 
-    // Accessori
+    // Accessories
     public function getProgressPercentageAttribute(): float
     {
         return $this->progress ?? 0;
@@ -73,7 +85,7 @@ class Project extends Model
     public function getDaysRemainingAttribute(): ?int
     {
         if (!$this->end_date) return null;
-        
+
         return now()->diffInDays($this->end_date, false);
     }
 

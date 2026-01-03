@@ -33,6 +33,10 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        if ($request->filled('token')) {
+            return redirect()->route('teams.accept', ['token' => $request->token]);
+        }
+
         return redirect()->intended(route('home', absolute: false));
     }
 
