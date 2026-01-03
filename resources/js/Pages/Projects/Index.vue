@@ -83,14 +83,14 @@ const backToGrid = () => {
         <Transition name="fade" mode="out-in">
             <div v-if="currentView === 'grid'">
                 <div class="border-b border-gray-800 pb-5">
-                    <h1 class="text-3xl font-bold text-white tracking-tight">I tuoi progetti</h1>
+                    <h1 class="text-3xl font-bold text-white tracking-tight">I progetti del team</h1>
                     <ProjectStats
                         class="mt-4"
                         :stats="projectStats"
                     />
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-8">
                     <div
                         @click="createProject"
                         class="group cursor-pointer border-2 border-dashed border-gray-700 rounded-xl flex flex-col items-center justify-center p-8 hover:border-[#07b4f6] hover:bg-[#07b4f6]/5 transition-all duration-300 min-h-[250px]"
@@ -117,16 +117,15 @@ const backToGrid = () => {
                     @back="backToGrid"
                 />
             </div>
-
-            <Modal :show="isModalOpen" @close="closeProjectModal" maxWidth="3xl">
-                <div class="border border-gray-800 rounded-lg overflow-hidden shadow-xl">
-                    <EditProject
-                        :project="selectedProject"
-                        @close="closeProjectModal"
-                        @confirmDelete="openDeleteConfirmation"
-                    />
-                </div>
-            </Modal>
         </Transition>
+        <Modal :show="isModalOpen" @close="closeProjectModal" maxWidth="3xl">
+            <div class="border border-gray-800 rounded-lg overflow-hidden shadow-xl">
+                <EditProject
+                    :project="selectedProject"
+                    @close="closeProjectModal"
+                    @confirmDelete="openDeleteConfirmation"
+                />
+            </div>
+        </Modal>
     </div>
 </template>
