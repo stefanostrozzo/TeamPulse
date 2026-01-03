@@ -12,8 +12,10 @@ use Spatie\Permission\Models\Permission;
 
 class DashboardController extends Controller
 {
+
     /**
-     * Handle the main dashboard view and tab switching.
+     * @param Request $request
+     * @return Response
      */
     public function index(Request $request): Response
     {
@@ -30,7 +32,15 @@ class DashboardController extends Controller
                     $query->select('users.id', 'users.name', 'users.email');
                 }])
                 ->withCount('users')
-                ->get(),
+                ->get()
+                ->map(function ($team) use ($user) {
+                    setPermissionsTeamId($team->id);
+
+                    return array_merge($team->toArray(), [
+                        'can_delete' => $user->can('delete team'),
+                        'can_edit_roles' => $user->can('change member roles'),
+                    ]);
+                }),
 
             // Basic session and auth status
             'mustVerifyEmail' => $request->user()->hasVerifiedEmail(),

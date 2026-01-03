@@ -2,8 +2,9 @@
 import { ref, onMounted, nextTick } from 'vue';
 import { router, usePage } from '@inertiajs/vue3';
 import Modal from "@/Components/Items/Modal.vue";
+import Swal from 'sweetalert2';
 
-// Import management components (to be created or adapted)
+// Import management components
 import EditTeam from "./Partials/EditTeam.vue";
 import TeamCard from "./Partials/TeamCard.vue";
 import ShowTeamMembers from "./Partials/ShowMembers.vue";
@@ -58,6 +59,34 @@ const closeTeamModal = () => {
     isModalOpen.value = false;
 };
 
+const openDeleteConfirmation = (team) => {
+    isModalOpen.value = false;
+
+    Swal.fire({
+        title: 'Sei sicuro?',
+        text: `L'eliminazione di "${team.name}" è permanente.`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#374151',
+        confirmButtonText: 'Sì, elimina',
+        cancelButtonText: 'Annulla',
+        background: '#1f2937',
+        color: '#ffffff',
+    }).then((result) => {
+        if (result.isConfirmed) {
+            router.delete(route('teams.destroy', team.id), {
+                onSuccess: () => {
+                    selectedTeam.value = null;
+                },
+                preserveScroll: true,
+            });
+        }else if (result.dismiss === Swal.DismissReason.cancel) {
+            editTeam(team);
+        }
+    });
+};
+
 /**
  * Switch the active team context
  * Sends a POST request to update the user's current_team_id
@@ -93,6 +122,7 @@ const backToGrid = () => {
 onMounted(() => {
     if (props.autoOpenCreate) createTeam();
 });
+
 </script>
 
 <template>
@@ -139,6 +169,7 @@ onMounted(() => {
                 <EditTeam
                     :team="selectedTeam"
                     @close="closeTeamModal"
+                    @confirmDelete="openDeleteConfirmation"
                 />
             </div>
         </Modal>

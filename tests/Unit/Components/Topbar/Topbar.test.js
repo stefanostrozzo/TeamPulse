@@ -121,10 +121,8 @@ describe('Topbar', () => {
   it('applies hover effects correctly', () => {
     const wrapper = mount(Topbar)
 
-    const commandBtn = wrapper.find('.command-palette-btn')
     const notificationBtn = wrapper.find('.action-btn')
 
-    expect(commandBtn.classes()).toContain('hover:bg-[#07b4f6]')
     expect(notificationBtn.classes()).toContain('hover:bg-[#07b4f6]')
   })
 })

@@ -24,6 +24,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('teams', TeamController::class)->only(['store', 'update', 'destroy']);
     Route::delete('/teams/{team}/members/{user}', [TeamController::class, 'removeMember'])->name('teams.members.remove');
     Route::post('/teams/invite', [TeamController::class, 'addMember'])->name('teams.invite');
+    Route::put('/teams/{team}/members/roles', [TeamController::class, 'updateMemberRole'])->name('teams.members.updateRole');
 
     //Project routes
     Route::post('/project', [ProjectController::class, 'store'])->name('project.store');

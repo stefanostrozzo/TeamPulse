@@ -15,7 +15,7 @@ const props = defineProps({
 /**
  * Emitted events to notify the parent component
  */
-const emit = defineEmits(['close']);
+const emit = defineEmits(['close', 'confirmDelete']);
 
 /**
  * Inertia Form helper for reactive data binding and XHR submission
@@ -84,11 +84,12 @@ const cancel = () => {
 
             <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-800">
                 <button
+                    v-if="team && team.can_delete"
                     type="button"
-                    @click="cancel"
-                    class="px-4 py-2 rounded-xl text-sm font-medium text-gray-400 hover:text-white hover:bg-gray-800 transition-all"
+                    @click="$emit('confirmDelete', team)"
+                    class="px-6 py-2.5 text-sm font-semibold text-red-500 hover:text-red-400 hover:bg-red-500/10 rounded-xl transition-all"
                 >
-                    Annulla
+                    <i class="fas fa-trash-alt mr-2"></i> Elimina Team
                 </button>
 
                 <button

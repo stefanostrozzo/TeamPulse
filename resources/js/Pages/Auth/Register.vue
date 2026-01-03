@@ -26,7 +26,7 @@ const showPasswordConfirmation = ref(false);
 const submit = () => {
     form.post(route('register'), {
         onSuccess: () => {
-            if(!token){
+            if(token === null){
                 router.visit(route('home', { tab: 'dashboard' }));
             }
         },
@@ -151,7 +151,7 @@ const submit = () => {
                 <div class="mt-8 pt-6 border-t border-gray-800 text-center">
                     <p class="text-gray-500 text-sm">
                         Hai già un account?
-                        <Link :href="route('login',{ token: token })" class="text-indigo-400 font-semibold hover:text-indigo-300 underline-offset-4 hover:underline">
+                        <Link :href="route('login', { token: token })" class="text-indigo-400 font-semibold hover:text-indigo-300 underline-offset-4 hover:underline">
                             Accedi qui
                         </Link>
                     </p>

@@ -14,13 +14,6 @@
         </div>
 
         <div class="topbar-actions flex items-center gap-6">
-            <button class="command-palette-btn flex items-center gap-2 bg-gray-700 text-gray-100 rounded-xl px-3 py-2 text-sm hover:bg-[#07b4f6] transition" @click="$emit('command')">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 17.25v1.007a3 3 0 01-.879 2.121L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m-6 0h6m-6 0a3 3 0 01-3-3V8.25a3 3 0 013-3h6a3 3 0 013 3v6a3 3 0 01-3 3m-6 0h6" />
-                </svg>
-                <span class="hidden md:inline">Command Palette</span>
-            </button>
-
             <button class="action-btn w-10 h-10 rounded-xl bg-gray-700 text-gray-100 hover:bg-[#07b4f6] transition relative" @click="$emit('toggle-notifications')">
                 <span v-if="notifications > 0" class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-[10px] flex items-center justify-center">
                     {{ notifications }}
@@ -57,7 +50,7 @@
         placeholder: { type: String, default: 'Cerca progetti, task o membri...' },
     });
 
-    defineEmits(['toggle-notifications', 'command']);
+    defineEmits(['toggle-notifications']);
 
     // Logic to find the active team name from the user's team list
     const activeTeamName = computed(() => {
