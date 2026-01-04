@@ -14,6 +14,8 @@ const props = defineProps({
     }
 });
 
+console.log(props.team);
+
 /**
  * Role Translation Map
  * Maps database role keys to their Italian display names
@@ -110,8 +112,8 @@ const sendInvitation = () => {
         onSuccess: () => {
             inviteForm.reset();
             Swal.fire({
-                title: 'Sent!',
-                text: 'Invitation sent successfully.',
+                title: 'Inviata!',
+                text: 'Invito spedito con successo.',
                 icon: 'success',
                 background: '#1f2937',
                 color: '#ffffff',
@@ -142,6 +144,17 @@ const removeMember = (user) => {
                 team: props.team.id
             }), {
                 preserveScroll: true,
+                onSuccess: () => {
+                    Swal.fire({
+                        title: 'Rimosso!',
+                        text: 'Membro rimosso con successo!.',
+                        icon: 'success',
+                        timer: 2000,
+                        showConfirmButton: false,
+                        background: '#1f2937',
+                        color: '#ffffff',
+                    });
+                },
             });
         }
     });

@@ -13,6 +13,10 @@ const props = defineProps({
     project: {
         type: Object,
         default: null
+    },
+    currentTeamId: {
+        type: Number,
+        required: true
     }
 });
 
@@ -23,6 +27,7 @@ const emit = defineEmits(['close', 'confirmDelete']);
  * Maps the form fields to the Project model fillable attributes.
  */
 const form = useForm({
+    team_id: props.project ? props.project.team_id : props.currentTeamId,
     name: '',
     description: '',
     status: 'planning',
@@ -38,6 +43,7 @@ const form = useForm({
  */
 const fillForm = () => {
     if (props.project) {
+        form.team_id = props.project.team_id;
         form.name = props.project.name ?? '';
         form.description = props.project.description ?? '';
         form.status = props.project.status ?? 'planning';
@@ -47,6 +53,7 @@ const fillForm = () => {
         form.progress = props.project.progress ?? 0;
     } else {
         form.reset();
+        form.team_id = props.currentTeamId;
     }
 };
 
@@ -86,7 +93,7 @@ const submit = () => {
         </div>
 
         <form @submit.prevent="submit" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-
+            <input type="hidden" :value="form.team_id">
             <div class="md:col-span-2">
                 <label class="block text-sm font-medium text-gray-400 mb-2">Nome Progetto</label>
                 <TextInput

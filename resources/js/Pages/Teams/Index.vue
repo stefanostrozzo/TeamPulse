@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, nextTick } from 'vue';
+import { ref, onMounted, nextTick, computed } from 'vue';
 import { router, usePage } from '@inertiajs/vue3';
 import Modal from "@/Components/Items/Modal.vue";
 import Swal from 'sweetalert2';
@@ -24,8 +24,12 @@ const page = usePage();
 const currentTeamId = ref(page.props.auth.user.current_team_id);
 
 const isModalOpen = ref(false);
-const selectedTeam = ref(null);
 const currentView = ref('grid'); // Toggles between 'grid' list and 'detail' view
+
+const selectedTeamId = ref(null);
+const selectedTeam = computed(() => {
+    return props.teams.find(t => t.id === selectedTeamId.value);
+});
 
 /**
  * Open modal to create a new team
@@ -104,7 +108,7 @@ const selectTeam = (teamId) => {
  * Enter the detailed view of a specific team (members and roles)
  */
 const openTeamDetail = (team) => {
-    selectedTeam.value = team;
+    selectedTeamId.value = team.id;
     currentView.value = 'detail';
 };
 
@@ -113,7 +117,7 @@ const openTeamDetail = (team) => {
  */
 const backToGrid = () => {
     currentView.value = 'grid';
-    selectedTeam.value = null;
+    selectedTeamId.value = null;
 };
 
 /**
@@ -160,6 +164,7 @@ onMounted(() => {
             <div v-else-if="currentView === 'detail' && selectedTeam">
                 <ShowTeamMembers
                     :team="selectedTeam"
+                    :key="selectedTeam.id + '-' + (selectedTeam.users?.length || 0)"
                     @back="backToGrid"
                 />
             </div>

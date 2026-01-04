@@ -237,7 +237,7 @@ class TeamController extends Controller
             $user->update(['current_team_id' => $user->teams()->first()?->id]);
         }
 
-        return redirect()->route('home',['tab' => 'teams'])->with('status', 'Utente rimosso dal team!');
+        return back()->with('status', 'Utente rimosso dal team!');
     }
 
     /**
