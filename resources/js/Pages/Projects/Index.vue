@@ -17,6 +17,10 @@ const props = defineProps({
     projectStats: {
         type: [Array, Object],
         default: () => []
+    },
+    currentTeamId: {
+        type: Number,
+        required: true
     }
 });
 
@@ -122,6 +126,7 @@ const backToGrid = () => {
             <div class="border border-gray-800 rounded-lg overflow-hidden shadow-xl">
                 <EditProject
                     :project="selectedProject"
+                    :currentTeamId="currentTeamId"
                     @close="closeProjectModal"
                     @confirmDelete="openDeleteConfirmation"
                 />

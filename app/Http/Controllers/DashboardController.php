@@ -21,10 +21,12 @@ class DashboardController extends Controller
     {
         $user = $request->user();
         $activeTab = $request->get('tab', 'home');
+        $currentTeamId = $user->current_team_id;
 
         return Inertia::render('Home', [
             // Current active tab state
             'activeTab' => $activeTab,
+            'currentTeamId' => $currentTeamId,
 
             'teamsCount' => $user->teams()->count(),
             'userTeams' => $user->teams()
@@ -47,15 +49,16 @@ class DashboardController extends Controller
             'status' => session('status'),
 
             // Projects data: Loaded lazily only when the 'projects' tab is active
-            'projects' => ($activeTab === 'projects')
-                ? Project::with(['tasks', 'members'])->get()
+            'projects' => ($activeTab === 'projects' && $currentTeamId)
+                ? Project::where('team_id', $currentTeamId)->with(['tasks', 'members'])->get()
                 : [],
 
-            'stats' => ($activeTab === 'projects') ? [
-                'total'     => Project::count(),
-                'active'    => Project::where('status', 'active')->count(),
-                'completed' => Project::where('status', 'completed')->count(),
-                'overdue'   => Project::where('status', 'active')
+            'stats' => ($activeTab === 'projects' && $currentTeamId) ? [
+                'total'     => Project::where('team_id', $currentTeamId)->count(),
+                'active'    => Project::where('team_id', $currentTeamId)->where('status', 'active')->count(),
+                'completed' => Project::where('team_id', $currentTeamId)->where('status', 'completed')->count(),
+                'overdue'   => Project::where('team_id', $currentTeamId)
+                    ->where('status', 'active')
                     ->where('end_date', '<', now())
                     ->count(),
             ] : null,

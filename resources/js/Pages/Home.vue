@@ -123,6 +123,7 @@ onMounted(() => {
                         <ProjectIndex
                             :projects="page.props.projects"
                             :projectStats="page.props.stats"
+                            :current-team-id="page.props.currentTeamId"
                         />
                     </div>
 
