@@ -7,7 +7,6 @@ import InputError from '@/Components/Items/InputError.vue';
 /**
  * Component Props
  * @property {Object|null} project - Provided for 'Edit' mode, null for 'Create' mode.
- * @property {Array} customers - List of customers from DashboardController.
  */
 const props = defineProps({
     project: {

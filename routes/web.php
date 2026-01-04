@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\UserManagementController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\TeamController;
+use App\Http\Controllers\TaskController;
 
 //Main route for the SPA application
 Route::get('/', [DashboardController::class, 'index'])
@@ -31,6 +32,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/project/{project}', [ProjectController::class, 'getElement'])->name('project.show');
     Route::put('/project/{project}', [ProjectController::class, 'update'])->name('project.update');
     Route::delete('/project/{project}', [ProjectController::class, 'destroy'])->name('project.destroy');
+
+    Route::post('/tasks', [TaskController::class, 'store'])->name('tasks.store');
 });
 
 //Accept invitation route
