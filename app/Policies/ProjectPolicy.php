@@ -4,23 +4,24 @@ namespace App\Policies;
 
 use App\Models\Project;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
+use Illuminate\Auth\Access\HandlesAuthorization;
 
 class ProjectPolicy
 {
+    use HandlesAuthorization;
+
     /**
      * Determine whether the user can view the specific project.
      */
     public function view(User $user, Project $project): bool
     {
-        if ($user->current_team_id === $project->team_id) {
-            if ($user->hasAnyRole(['owner', 'manager'])) {
-                return true;
-            }
-            return $project->members()->where('user_id', $user->id)->exists();
+        setPermissionsTeamId($project->team_id);
+
+        if ($user->can('view all projects')) {
+            return true;
         }
 
-        return false;
+        return $project->members()->where('user_id', $user->id)->exists();
     }
 
     /**
@@ -36,7 +37,13 @@ class ProjectPolicy
      */
     public function update(User $user, Project $project): bool
     {
-        return $user->current_team_id === $project->team_id && $user->can('edit projects');
+        setPermissionsTeamId($project->team_id);
+
+        //Reload Spatie permissions for the team
+        $user->unsetRelation('roles');
+        $user->unsetRelation('permissions');
+
+        return $user->can('edit projects');
     }
 
     /**
@@ -44,6 +51,7 @@ class ProjectPolicy
      */
     public function delete(User $user, Project $project): bool
     {
-        return $user->current_team_id === $project->team_id && $user->can('delete projects');
+        setPermissionsTeamId($project->team_id);
+        return $user->can('delete projects');
     }
 }

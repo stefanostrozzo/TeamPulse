@@ -28,15 +28,9 @@ Route::middleware('auth')->group(function () {
 
     //Project routes
     Route::post('/project', [ProjectController::class, 'store'])->name('project.store');
-    Route::middleware('can:view,project')->group(function() {
-        Route::get('/project/{project}', [ProjectController::class, 'getElement'])->name('project.show');
-    });
-    Route::middleware('can:update,project')->group(function() {
-        Route::put('/project/{project}', [ProjectController::class, 'update'])->name('project.update');
-    });
-    Route::middleware('can:delete,project')->group(function() {
-        Route::delete('/project/{project}', [ProjectController::class, 'destroy'])->name('project.destroy');
-    });
+    Route::get('/project/{project}', [ProjectController::class, 'getElement'])->name('project.show');
+    Route::put('/project/{project}', [ProjectController::class, 'update'])->name('project.update');
+    Route::delete('/project/{project}', [ProjectController::class, 'destroy'])->name('project.destroy');
 });
 
 //Accept invitation route

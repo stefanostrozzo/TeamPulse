@@ -20,8 +20,6 @@ const props = defineProps({
     }
 });
 
-console.log(props.currentTeamId);
-
 const emit = defineEmits(['close', 'confirmDelete']);
 
 /**
@@ -95,7 +93,7 @@ const submit = () => {
         </div>
 
         <form @submit.prevent="submit" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-
+            <input type="hidden" :value="form.team_id">
             <div class="md:col-span-2">
                 <label class="block text-sm font-medium text-gray-400 mb-2">Nome Progetto</label>
                 <TextInput

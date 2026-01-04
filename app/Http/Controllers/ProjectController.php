@@ -67,11 +67,10 @@ class ProjectController extends Controller
      */
     public function update(Request $request, Project $project)
     {
-        // Set the Spatie permission context to the project's team_id
         setPermissionsTeamId($project->team_id);
 
-        // Authorize the edit permission
-        $this->authorize('edit projects');
+        // Calls the update method on policy
+        $this->authorize('update', $project);
 
         $validated = $request->validate([
             'name'        => 'required|string|max:255',
