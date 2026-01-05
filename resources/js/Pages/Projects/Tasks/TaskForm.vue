@@ -30,6 +30,7 @@ const form = useForm({
     start_date: '',
     due_date: '',
     progress: 0,
+    task_parent_id: props.task?.task_parent_id ?? null,
 });
 
 /**
@@ -46,6 +47,7 @@ const fillForm = () => {
         form.assignee_id = props.task.assignee_id ?? null;
         form.progress = props.task.progress ?? 0;
         form.type = props.task.type ?? 'feature';
+        form.task_parent_id = props.task_parent_id ?? null;
 
         // Truncate timestamp to date string (ISO 8601)
         form.start_date = props.task.start_date ? props.task.start_date.substring(0, 10) : '';
@@ -90,10 +92,18 @@ const submit = () => {
                 <span class="text-xs font-bold uppercase tracking-widest text-gray-500 italic">Dettaglio Attività</span>
             </div>
             <div class="flex items-center space-x-2">
-                <button v-if="task" @click="$emit('confirmDelete', task)" class="p-2 text-gray-500 hover:text-red-500 transition-colors">
+                <button
+                    v-if="task && $page.props.auth.user.permissions.includes('delete tasks')"
+                    @click="$emit('confirmDelete', task)"
+                    class="p-2 text-gray-500 hover:text-red-500 transition-colors"
+                >
                     <i class="fas fa-trash-alt"></i>
                 </button>
-                <button @click="$emit('close')" class="p-2 text-gray-500 hover:text-white transition-colors">
+                <button
+                    v-if="(task && $page.props.auth.user.permissions.includes('edit tasks')) || (!task && $page.props.auth.user.permissions.includes('create tasks'))"
+                    @click="$emit('close')"
+                    class="p-2 text-gray-500 hover:text-white transition-colors"
+                >
                     <i class="fas fa-times"></i>
                 </button>
             </div>
@@ -109,6 +119,29 @@ const submit = () => {
                     placeholder="Titolo attività..."
                 ></textarea>
                 <InputError :message="form.errors.title" />
+            </div>
+
+            <div class="mb-6 space-y-2">
+                <label class="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1">
+                    Attività Superiore (Parent)
+                </label>
+                <select
+                    v-model="form.task_parent_id"
+                    class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-[#07b4f6] outline-none transition-all"
+                >
+                    <option :value="null">Nessuna (Attività principale)</option>
+                    <option
+                        v-for="availableTask in project.tasks"
+                        :key="availableTask.id"
+                        :value="availableTask.id"
+                        :disabled="availableTask.id === task?.id"
+                    >
+                        #{{ availableTask.id }} - {{ availableTask.title }}
+                    </option>
+                </select>
+                <p class="text-[10px] text-gray-600 ml-1 italic">
+                    Scegli un'attività se questa deve essere una sotto-attività.
+                </p>
             </div>
 
             <div class="space-y-4 text-sm">

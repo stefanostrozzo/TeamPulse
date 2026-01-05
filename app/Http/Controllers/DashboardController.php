@@ -50,7 +50,7 @@ class DashboardController extends Controller
 
             // Projects data: Loaded lazily only when the 'projects' tab is active
             'projects' => ($activeTab === 'projects' && $currentTeamId)
-                ? Project::where('team_id', $currentTeamId)->with(['tasks', 'members'])->get()
+                ? Project::where('team_id', $currentTeamId)->with(['tasks', 'members','tasks.assignee'])->get()
                 : [],
 
             'stats' => ($activeTab === 'projects' && $currentTeamId) ? [

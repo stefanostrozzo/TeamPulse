@@ -35,12 +35,12 @@ const selectedProject = computed(() => {
 });
 
 const createProject = () => {
-    selectedProject.value = null;
+    selectedProjectId.value = null;
     isModalOpen.value = true;
 };
 
 const editProject = (project) => {
-    selectedProject.value = project;
+    selectedProjectId.value = project.id;
     isModalOpen.value = true;
 };
 

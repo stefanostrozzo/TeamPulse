@@ -35,6 +35,7 @@ class TaskController extends Controller
             'start_date' => 'nullable|date',
             'due_date' => 'nullable|date',
             'progress' => 'integer|min:0|max:100',
+            'task_parent_id' => 'nullable|exists:tasks,id',
         ]);
 
         $validated['created_by'] = auth()->id();
@@ -70,6 +71,7 @@ class TaskController extends Controller
             'start_date'  => 'nullable|date',
             'due_date'    => 'nullable|date',
             'progress'    => 'integer|min:0|max:100',
+            'task_parent_id' => 'nullable|exists:tasks,id',
         ]);
 
         // 4. Execute update within a transaction to ensure data integrity

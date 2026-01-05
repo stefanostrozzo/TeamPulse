@@ -118,6 +118,7 @@ const PROJECT_PRIORITIES = {
             </div>
         </div>
         <button
+            v-if="$page.props.auth.user.permissions.includes('create tasks')"
             @click="openCreateTask"
             class="bg-[#07b4f6] hover:bg-[#06a3de] text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center shadow-lg shadow-[#07b4f6]/20 transition-all active:scale-95"
         >

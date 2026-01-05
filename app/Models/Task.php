@@ -25,6 +25,7 @@ class Task extends Model
         'due_date',
         'completed_at',
         'progress',
+        'task_parent_id',
     ];
 
     protected $casts = [
