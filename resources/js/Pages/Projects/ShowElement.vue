@@ -3,7 +3,6 @@ import { ref } from 'vue';
 import Swal from 'sweetalert2';
 
 import TaskList from '@/Pages/Projects/Tasks/TaskList.vue';
-import Modal from "@/Components/Items/Modal.vue";
 import TaskForm from "@/Pages/Projects/Tasks/TaskForm.vue";
 import {router} from "@inertiajs/vue3";
 
@@ -14,6 +13,7 @@ const props = defineProps({
 
 const emit = defineEmits(['back']);
 const activeTab = ref('elenco');
+const refreshCounter = ref(0);
 
 const isModalOpen = ref(false);
 const selectedTask = ref(null);
@@ -25,11 +25,16 @@ const openCreateTask = () => {
 
 const closeTask = () => {
     isModalOpen.value = false;
+    refreshCounter.value++;
+    // Timeout to prevent visual glitches during transition
+    setTimeout(() => {
+        selectedTask.value = null;
+    }, 300);
 }
 
 const editTask = (task) => {
     selectedTask.value = task;
-    activeTab.value = task;
+    isModalOpen.value = true;
 }
 
 const openDeleteConfirmation = (task) => {
@@ -37,7 +42,7 @@ const openDeleteConfirmation = (task) => {
 
     Swal.fire({
         title: 'Sei sicuro?',
-        text: `L'eliminazione di "${task.name}" è permanente.`,
+        text: `L'eliminazione di "${task.title}" è permanente.`,
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#ef4444',
@@ -48,7 +53,12 @@ const openDeleteConfirmation = (task) => {
         color: '#ffffff',
     }).then((result) => {
         if (result.isConfirmed) {
-           //TODO
+            router.delete(route('tasks.destroy', task.id), {
+                preserveScroll: true,
+                onSuccess: () => {
+                    isModalOpen.value = false;
+                }
+            });
         }else if (result.dismiss === Swal.DismissReason.cancel) {
             editTask(task);
         }
@@ -133,10 +143,12 @@ const PROJECT_PRIORITIES = {
             <div v-if="activeTab === 'elenco'" class="fade-in">
                 <TaskList
                     :tasks="project.tasks"
+                    :key="refreshCounter"
+                    @edit="editTask"
                 />
             </div>
 
-            <div class="relative min-h-screen overflow-x-hidden">
+            <div class="relative overflow-x-hidden">
                 <div :class="['transition-all duration-500', isModalOpen ? 'mr-[35%]' : '']">
                 </div>
 
@@ -146,7 +158,7 @@ const PROJECT_PRIORITIES = {
                 </div>
 
                 <div :class="[
-                    'fixed top-0 right-0 h-full w-[35%] bg-gray-900 border-l border-gray-800 z-50 transform transition-transform duration-300 ease-in-out shadow-2xl overflow-y-auto',
+                    'fixed top-0 right-0 h-full w-[35%] bg-gray-900 border-l border-gray-500 z-50 transform transition-transform duration-300 ease-in-out shadow-2xl overflow-y-auto',
                     isModalOpen ? 'translate-x-0' : 'translate-x-full'
                 ]">
                     <TaskForm

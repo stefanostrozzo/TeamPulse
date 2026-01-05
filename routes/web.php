@@ -34,6 +34,8 @@ Route::middleware('auth')->group(function () {
     Route::delete('/project/{project}', [ProjectController::class, 'destroy'])->name('project.destroy');
 
     Route::post('/tasks', [TaskController::class, 'store'])->name('tasks.store');
+    Route::put('/tasks/{task}', [TaskController::class, 'update'])->name('tasks.update');
+    Route::delete('/tasks/{task}', [TaskController::class, 'destroy'])->name('tasks.destroy');
 });
 
 //Accept invitation route

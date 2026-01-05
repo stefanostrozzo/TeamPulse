@@ -65,7 +65,7 @@ class ProjectController extends Controller
      */
     public function getElement($id)
     {
-        $project = Project::with(['tasks.assignee', 'members'])->findOrFail($id);
+        $project = Project::with(['tasks.assignee', 'members', 'tasks'])->findOrFail($id);
 
         // Scope the permission check to the project's owning team
         setPermissionsTeamId($project->team_id);
