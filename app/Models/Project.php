@@ -43,16 +43,18 @@ class Project extends Model
     }
 
     /**
-     *
+     * Retrieves project members
      * @return BelongsToMany
      */
     public function members()
     {
-        return $this->belongsToMany(User::class, 'project_members')->withTimestamps();
+        return $this->belongsToMany(User::class, 'project_members')
+            ->using(ProjectMember::class)
+            ->withTimestamps();
     }
 
     /**
-     * Retrives the team of the project
+     * Retrieves the team of the project
      * @return BelongsTo
      */
     public function team(): BelongsTo

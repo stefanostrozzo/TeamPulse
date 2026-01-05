@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Project;
+use Illuminate\Support\Facades\DB;
 use App\Models\Team;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
@@ -13,9 +14,10 @@ class ProjectController extends Controller
     use AuthorizesRequests;
 
     /**
-     * Store a newly created project in storage.
-     * * @param Request $request
+     * Stores a newly created project
+     * @param Request $request
      * @return RedirectResponse
+     * @throws \Throwable
      */
     public function store(Request $request)
     {
@@ -36,7 +38,20 @@ class ProjectController extends Controller
             'team_id' => 'required|exists:teams,id',
         ]);
 
-        Project::create($validated);
+        //Use transaction for safety
+        $project = DB::transaction(function () use ($validated) {
+
+            $project = Project::create($validated);
+
+            $teamMemberIds = Team::find($validated['team_id'])
+                ->users()
+                ->pluck('users.id')
+                ->toArray();
+
+            $project->members()->attach($teamMemberIds);
+
+            return $project;
+        });
 
         return redirect()->route('home', ['tab' => 'projects'])
             ->with('status', 'Project successfully created!');
@@ -50,7 +65,7 @@ class ProjectController extends Controller
      */
     public function getElement($id)
     {
-        $project = Project::findOrFail($id);
+        $project = Project::with(['tasks.assignee', 'members', 'tasks'])->findOrFail($id);
 
         // Scope the permission check to the project's owning team
         setPermissionsTeamId($project->team_id);
@@ -60,10 +75,11 @@ class ProjectController extends Controller
     }
 
     /**
-     * Update the specified project in storage.
-     * * @param Request $request
+     * Updates the designed project
+     * @param Request $request
      * @param Project $project
      * @return RedirectResponse
+     * @throws \Throwable
      */
     public function update(Request $request, Project $project)
     {
@@ -82,29 +98,46 @@ class ProjectController extends Controller
             'progress'    => 'integer|min:0|max:100',
         ]);
 
-        $project->update($validated);
+        // Sync members to project
+        DB::transaction(function () use ($project, $validated) {
+
+            $project->update($validated);
+            $teamMemberIds = $project->team->users()->pluck('users.id')->toArray();
+            $project->members()->sync($teamMemberIds);
+        });
 
         return redirect()->route('home', ['tab' => 'projects'])
             ->with('status', 'Project updated!');
     }
 
     /**
-     * Remove the specified project from storage.
-     * * @param int $id
+     * Eliminates the designed project
+     * @param $id
      * @param Request $request
      * @return RedirectResponse
+     * @throws \Throwable
      */
     public function destroy($id, Request $request)
     {
         $project = Project::findOrFail($id);
-
+        $activeTab = $request->get('tab', 'projects');
         // Ensure the deletion is authorized within the correct team context
         setPermissionsTeamId($project->team_id);
         $this->authorize('delete projects');
 
-        $project->delete();
+        //Use transaction for safety
+        $projectToDestroy = DB::transaction(function () use ($project){
 
-        $activeTab = $request->get('tab', 'projects');
+            $teamMemberIds = Team::find($project->team_id)
+                ->users()
+                ->pluck('users.id')
+                ->toArray();
+
+            $project->members()->detach($teamMemberIds);
+
+            $project->delete();
+        });
+
         return redirect()->route('home', ['tab' => $activeTab])
             ->with('status', 'Project successfully deleted!');
     }

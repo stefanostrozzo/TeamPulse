@@ -7,7 +7,6 @@ import InputError from '@/Components/Items/InputError.vue';
 /**
  * Component Props
  * @property {Object|null} project - Provided for 'Edit' mode, null for 'Create' mode.
- * @property {Array} customers - List of customers from DashboardController.
  */
 const props = defineProps({
     project: {
@@ -159,15 +158,18 @@ const submit = () => {
 
             <div class="md:col-span-2 flex justify-end space-x-4 mt-8 pt-6 border-t border-gray-800">
                 <button
-                    v-if="project"
+                    v-if="project && $page.props.auth.user.permissions.includes('delete projects')"
                     type="button"
                     @click="$emit('confirmDelete', project)"
                     class="px-6 py-2.5 text-sm font-semibold text-red-500 hover:text-red-400 hover:bg-red-500/10 rounded-xl transition-all"
                 >
                     <i class="fas fa-trash-alt mr-2"></i> Elimina Progetto
                 </button>
-                <button type="submit" :disabled="form.processing"
-                        class="px-8 py-2.5 bg-gradient-to-r from-[#07b4f6] to-cyan-500 text-white rounded-xl font-bold shadow-lg shadow-[#07b4f6]/20 hover:scale-105 active:scale-95 transition-all disabled:opacity-50">
+                <button
+                    v-if="(project && $page.props.auth.user.permissions.includes('edit projects')) || (!project && $page.props.auth.user.permissions.includes('create projects'))"
+                    type="submit" :disabled="form.processing"
+                    class="px-8 py-2.5 bg-gradient-to-r from-[#07b4f6] to-cyan-500 text-white rounded-xl font-bold shadow-lg shadow-[#07b4f6]/20 hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
+                >
                     <span v-if="form.processing"><i class="fas fa-spinner fa-spin mr-2"></i> Salvataggio...</span>
                     <span v-else>{{ project ? 'Aggiorna Progetto' : 'Crea Progetto' }}</span>
                 </button>

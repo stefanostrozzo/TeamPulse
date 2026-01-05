@@ -35,7 +35,7 @@ const selectedTeam = computed(() => {
  * Open modal to create a new team
  */
 const createTeam = () => {
-    selectedTeam.value = null;
+    selectedTeamId.value = null;
     isModalOpen.value = false;
 
     nextTick(() => {
@@ -48,7 +48,7 @@ const createTeam = () => {
  * Typically triggered by right-click (contextmenu)
  */
 const editTeam = (team) => {
-    selectedTeam.value = team;
+    selectedTeamId.value = team.id;
     isModalOpen.value = false;
 
     nextTick(() => {

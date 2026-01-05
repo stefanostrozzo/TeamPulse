@@ -14,6 +14,8 @@ class Task extends Model
     protected $fillable = [
         'team_id',
         'project_id',
+        'assignee_id',
+        'created_by',
         'user_id',
         'title',
         'description',
@@ -23,6 +25,7 @@ class Task extends Model
         'due_date',
         'completed_at',
         'progress',
+        'task_parent_id',
     ];
 
     protected $casts = [
@@ -47,7 +50,7 @@ class Task extends Model
      */
     public function assignee(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(User::class, 'assignee_id');
     }
 
     /**

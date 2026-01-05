@@ -87,9 +87,6 @@ class TeamController extends Controller
         //1. Update the team
         $team->update($validated);
 
-        //2. Automatically switch to the newly created team
-        $request->user()->update(['current_team_id' => $team->id]);
-
         return redirect()->route('home', ['tab' => 'teams'])
             ->with('status', 'Team modificato correttamente!');
     }

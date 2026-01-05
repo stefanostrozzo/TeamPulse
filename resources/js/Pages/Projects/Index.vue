@@ -1,13 +1,13 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
+import Swal from 'sweetalert2';
+import { router } from '@inertiajs/vue3';
 
 import ProjectStats from "@/Pages/Projects/Partials/ProjectStats.vue";
 import ProjectCard from "@/Pages/Projects/Partials/ProjectCard.vue";
 import EditProject from "@/Pages/Projects/Edit.vue";
 import Modal from "@/Components/Items/Modal.vue";
 import ShowElement from "@/Pages/Projects/ShowElement.vue";
-import Swal from 'sweetalert2';
-import { router } from '@inertiajs/vue3';
 
 const props = defineProps({
     projects: {
@@ -25,16 +25,22 @@ const props = defineProps({
 });
 
 const isModalOpen = ref(false);
-const selectedProject = ref(null);
+const selectedProjectId = ref(null);
 const currentView = ref('grid');
 
+const selectedProject = computed(() => {
+    if (!selectedProjectId.value) return null;
+    const list = props.projects.data || props.projects;
+    return list.find(p => p.id === selectedProjectId.value);
+});
+
 const createProject = () => {
-    selectedProject.value = null;
+    selectedProjectId.value = null;
     isModalOpen.value = true;
 };
 
 const editProject = (project) => {
-    selectedProject.value = project;
+    selectedProjectId.value = project.id;
     isModalOpen.value = true;
 };
 
@@ -72,6 +78,7 @@ const openDeleteConfirmation = (project) => {
 
 const handleOpenProject = (project) => {
     selectedProject.value = project;
+    selectedProjectId.value = project.id;
     currentView.value = 'detail';
 };
 

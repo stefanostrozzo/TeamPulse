@@ -45,22 +45,6 @@ class HandleInertiaRequests extends Middleware
             ],
         ];
 
-        // Carica i dati di gestione permessi solo se l'utente ha i permessi
-        // e solo per le pagine che ne hanno bisogno
-        if ($user && ($user->can('manage users') || $user->can('manage roles'))) {
-            // Carica i dati solo per la pagina home o admin
-            $currentRoute = $request->route();
-            $routeName = $currentRoute ? $currentRoute->getName() : '';
-
-            if (in_array($routeName, ['home', 'admin.users']) || $request->is('home')) {
-                $shared['managementData'] = [
-                    'users' => \App\Models\User::with('roles', 'permissions')->get(),
-                    'roles' => \Spatie\Permission\Models\Role::all(),
-                    'permissions' => \Spatie\Permission\Models\Permission::all(),
-                ];
-            }
-        }
-
         return $shared;
     }
 }
