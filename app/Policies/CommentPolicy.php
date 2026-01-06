@@ -12,11 +12,11 @@ class CommentPolicy
 
     /**
      * Determine whether the user can update the comment.
-     * Only the author of the comment is allowed to edit the content.
+     * Only users who have the manage comments permission is allowed to edit the content.
      */
     public function update(User $user, Comment $comment): bool
     {
-        return $user->id === $comment->user_id;
+        return $user->hasPermissionTo('manage comments');
     }
 
     /**
@@ -25,12 +25,6 @@ class CommentPolicy
      */
     public function delete(User $user, Comment $comment): bool
     {
-        // Users can delete their own comments
-        if ($user->id === $comment->user_id) {
-            return true;
-        }
-
-        // Optional: Allow project managers/admins to delete any comment
-        return $user->hasPermissionTo('delete tasks');
+        return $user->hasPermissionTo('delete comments');
     }
 }

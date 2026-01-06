@@ -1,108 +1,81 @@
 <script setup>
-import { ref } from 'vue';
-import { QuillEditor } from '@vueup/vue-quill';
-import '@vueup/vue-quill/dist/vue-quill.snow.css';
+import { useEditor, EditorContent } from '@tiptap/vue-3';
+import StarterKit from '@tiptap/starter-kit';
+import Image from '@tiptap/extension-image';
+import { onBeforeUnmount } from 'vue';
+import Swal from 'sweetalert2';
 
 const props = defineProps({
     processing: Boolean
 });
 
 const emit = defineEmits(['save', 'cancel']);
-const content = ref('');
+
+const editor = useEditor({
+    content: '',
+    extensions: [
+        StarterKit,
+        Image.configure({
+            allowBase64: true, // Allows pasting images directly
+            HTMLAttributes: {
+                class: 'rounded-xl border border-gray-700 max-w-full my-4 shadow-lg',
+            },
+        }),
+    ],
+    editorProps: {
+        attributes: {
+            class: 'focus:outline-none min-h-[120px] text-gray-200 p-4 prose prose-invert max-w-none shadow-inner',
+        },
+    },
+});
 
 const handleSave = () => {
-    if (!content.value || content.value === '<p><br></p>') return;
-    emit('save', content.value);
-    content.value = '';
+    const html = editor.value.getHTML();
+    if (!html || html === '<p></p>') return;
+
+    emit('save', html);
+    editor.value.commands.clearContent();
 };
+
+onBeforeUnmount(() => {
+    editor.value.destroy();
+});
 </script>
 
 <template>
-    <div class="mb-8">
-        <div class="bg-gray-800 rounded-2xl border border-gray-700 overflow-hidden shadow-inner">
-            <QuillEditor
-                v-model:content="content"
-                contentType="html"
-                theme="snow"
-                placeholder="Scrivi qui il tuo commento..."
-            />
+    <div class="mb-8 group">
+        <div class="bg-gray-900/50 rounded-2xl border border-gray-800 focus-within:border-[#07b4f6]/50 transition-all overflow-hidden shadow-2xl">
+
+            <div v-if="editor" class="flex items-center gap-1 p-2 border-b border-gray-800 bg-gray-950/50">
+                <button type="button" @click="editor.chain().focus().toggleBold().run()"
+                        :class="{'bg-[#07b4f6]/20 text-[#07b4f6]': editor.isActive('bold'), 'text-gray-400': !editor.isActive('bold')}"
+                        class="p-2 rounded-lg hover:bg-gray-800 transition-all">
+                    <i class="fas fa-bold text-xs"></i>
+                </button>
+
+                <button type="button" @click="editor.chain().focus().toggleBulletList().run()"
+                        :class="{'bg-[#07b4f6]/20 text-[#07b4f6]': editor.isActive('bulletList'), 'text-gray-400': !editor.isActive('bulletList')}"
+                        class="p-2 rounded-lg hover:bg-gray-800 transition-all">
+                    <i class="fas fa-list-ul text-xs"></i>
+                </button>
+            </div>
+
+            <EditorContent :editor="editor" />
         </div>
-        <div class="mt-3 flex justify-end gap-3">
-            <button type="button" @click="emit('cancel')" class="text-xs font-bold text-gray-500 hover:text-white px-2">
+
+        <div class="mt-3 flex justify-end gap-3 opacity-0 group-focus-within:opacity-100 transition-opacity duration-300">
+            <button type="button" @click="emit('cancel')" class="text-[11px] font-bold text-gray-500 hover:text-white uppercase tracking-widest">
                 Annulla
             </button>
-            <button
-                type="button"
-                @click="handleSave"
-                :disabled="processing"
-                class="bg-[#07b4f6] text-white text-xs font-bold px-4 py-2 rounded-lg hover:bg-[#06a3de] transition-all disabled:opacity-50"
-            >
-                {{ processing ? 'Invio...' : 'Invia' }}
+            <button type="button" @click="handleSave" :disabled="processing"
+                    class="bg-[#07b4f6] hover:bg-[#06a3de] text-white text-[11px] font-bold px-6 py-2 rounded-xl shadow-lg shadow-[#07b4f6]/20 transition-all active:scale-95 disabled:opacity-50 uppercase tracking-widest">
+                Aggiungi
             </button>
         </div>
     </div>
 </template>
 
-<style>
-/* Colore delle icone e dei testi dei pulsanti */
-.ql-snow .ql-stroke {
-    stroke: #d1d5db !important; /* gray-300 */
-}
-.ql-snow .ql-fill {
-    fill: #d1d5db !important;
-}
-.ql-snow .ql-picker {
-    color: #d1d5db !important;
-}
-
-/* Hover sui pulsanti della toolbar */
-.ql-snow.ql-toolbar button:hover .ql-stroke,
-.ql-snow .ql-toolbar button:hover .ql-stroke {
-    stroke: #07b4f6 !important; /* Il tuo azzurro */
-}
-
-/* FIX per il tema chiaro sugli hover/tooltip */
-.ql-snow .ql-tooltip {
-    background-color: #1f2937 !important; /* gray-800 */
-    color: #f3f4f6 !important; /* gray-100 */
-    border: 1px solid #374151 !important; /* gray-700 */
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5) !important;
-}
-
-.ql-snow .ql-tooltip input[type=text] {
-    background: #111827 !important; /* gray-900 */
-    border: 1px solid #4b5563 !important;
-    color: white !important;
-}
-
-/* Colore di sfondo della toolbar */
-.ql-toolbar.ql-snow {
-    border-color: #374151 !important;
-    background-color: #1f2937 !important;
-}
-</style>
-
 <style scoped>
-:deep(.ql-toolbar.ql-snow) {
-    border-color: #374151;
-    background-color: #111827;
-}
-
-:deep(.ql-snow .ql-stroke) {
-    stroke: #9ca3af;
-}
-
-:deep(.ql-snow .ql-picker) {
-    color: #9ca3af;
-}
-
-:deep(.ql-snow.ql-toolbar button:hover .ql-stroke) {
-    stroke: #07b4f6;
-}
-
-/* Questo corregge i pulsanti che diventano bianchi al click/hover */
-:deep(.ql-snow.ql-toolbar button:hover),
-:deep(.ql-snow.ql-toolbar button.ql-active) {
-    background-color: #1f2937;
-}
+.tiptap:focus { outline: none; }
+:deep(.prose ul) { list-style-type: disc; padding-left: 1.5rem; }
 </style>
