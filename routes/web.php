@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\TeamController;
 use App\Http\Controllers\TaskController;
+use App\Http\Controllers\CommentController;
 
 //Main route for the SPA application
 Route::get('/', [DashboardController::class, 'index'])
@@ -29,13 +30,13 @@ Route::middleware('auth')->group(function () {
 
     //Project routes
     Route::post('/project', [ProjectController::class, 'store'])->name('project.store');
-    Route::get('/project/{project}', [ProjectController::class, 'getElement'])->name('project.show');
     Route::put('/project/{project}', [ProjectController::class, 'update'])->name('project.update');
     Route::delete('/project/{project}', [ProjectController::class, 'destroy'])->name('project.destroy');
 
-    Route::post('/tasks', [TaskController::class, 'store'])->name('tasks.store');
-    Route::put('/tasks/{task}', [TaskController::class, 'update'])->name('tasks.update');
-    Route::delete('/tasks/{task}', [TaskController::class, 'destroy'])->name('tasks.destroy');
+    Route::resource('tasks', TaskController::class)->only(['store', 'update', 'destroy']);
+
+    Route::post('tasks/{task}/comments', [CommentController::class, 'store'])->name('comments.store');
+    Route::resource('comments', CommentController::class)->only(['update', 'destroy']);
 });
 
 //Accept invitation route

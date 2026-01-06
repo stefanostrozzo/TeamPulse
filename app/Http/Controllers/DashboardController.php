@@ -50,7 +50,21 @@ class DashboardController extends Controller
 
             // Projects data: Loaded lazily only when the 'projects' tab is active
             'projects' => ($activeTab === 'projects' && $currentTeamId)
-                ? Project::where('team_id', $currentTeamId)->with(['tasks', 'members','tasks.assignee'])->get()
+                ? Project::where('team_id', $currentTeamId)
+                    ->with(['tasks.comments.user', 'members', 'tasks.assignee'])
+                    ->get()
+                    ->map(function ($project) use ($user) {
+                        setPermissionsTeamId($project->team_id);
+
+                        $project->tasks->each(function ($task) use ($user) {
+                            $task->comments->each(function ($comment) use ($user) {
+
+                                $comment->can_edit = $user->id === $comment->created_by;
+                                $comment->can_delete = ($user->id === $comment->created_by) || $user->can('delete tasks');
+                            });
+                        });
+                        return $project;
+                    })
                 : [],
 
             'stats' => ($activeTab === 'projects' && $currentTeamId) ? [
