@@ -1,23 +1,29 @@
 <script setup>
-import { useForm } from '@inertiajs/vue3';
-import { onMounted, watch, computed } from 'vue';
+import { useForm, router } from '@inertiajs/vue3';
+import { onMounted, watch, computed, ref } from 'vue';
 import InputError from '@/Components/Items/InputError.vue';
 import Select from 'primevue/select';
+import CommentEditor from '../Comments/CommentEditor.vue';
+import CommentItem from '../Comments/CommentItem.vue';
 
 /**
  * Component Props
- * @property {Object} project - The parent project context containing members and tasks.
- * @property {Object|null} task - The task object if editing, null if creating.
+ * project: Context containing members and tasks for validation and selection.
+ * task: The task instance (null when creating a new task).
  */
 const props = defineProps({
     project: { type: Object, required: true },
     task: { type: Object, default: null }
 });
 
+const updatedTask = computed(() => {
+    return props.project.tasks.find(t => t.id === props.task?.id) || props.task;
+});
+
 const emit = defineEmits(['close', 'confirmDelete']);
 
 /**
- * Inertia form helper initialized with reactive task attributes.
+ * Initialize form state using Inertia's useForm helper.
  */
 const form = useForm({
     project_id: props.project.id,
@@ -27,14 +33,14 @@ const form = useForm({
     status: 'todo',
     priority: 'low',
     type: 'feature',
-    assignee_id: null,
+    assignee_id: props.task?.assignee_id ?? null,
     start_date: '',
     due_date: '',
     progress: 0,
     task_parent_id: props.task?.task_parent_id ?? null,
 });
 
-// Options for static dropdowns (translated to Italian)
+// Localization: UI Labels for Italian users
 const statusOptions = [
     { label: 'Da Fare', value: 'todo' },
     { label: 'In Corso', value: 'in-progress' },
@@ -55,86 +61,84 @@ const typeOptions = [
 ];
 
 /**
- * Formats project members for the searchable assignee dropdown.
+ * Compute available assignees, including a null option for unassigned tasks.
  */
 const assigneeOptions = computed(() => {
     const members = props.project.members.map(m => ({
         label: m.name,
         value: m.id
     }));
-    return [{ label: 'Non assegnato', value: null }, ...members];
+    return [{ label: 'Nessun assegnatario', value: null }, ...members];
 });
 
 /**
- * Circular reference prevention: recursively finds all children IDs.
+ * Persist a new comment to the database.
  */
-const getDescendantIds = (taskId, allTasks) => {
-    let descendants = [];
-    const children = allTasks.filter(t => t.task_parent_id === taskId);
-    children.forEach(child => {
-        descendants.push(child.id);
-        descendants = [...descendants, ...getDescendantIds(child.id, allTasks)];
+const isAddingComment = ref(false);
+const saveComment = (htmlContent) => {
+    // Ensure the task exists before attempting to comment
+    if (!props.task?.id) return;
+
+    router.post(route('comments.store', props.task.id), {
+        content: htmlContent
+    }, {
+        onSuccess: () => {
+            isAddingComment.value = false;
+        },
+        preserveScroll: true
     });
-    return descendants;
 };
 
 /**
- * Filters the project tasks to exclude the current task and its descendants
- * from being selected as a parent (prevents infinite loops).
+ * Prevent circular parent-child relationships by filtering out
+ * the current task and its descendants.
  */
 const availableParentOptions = computed(() => {
     let tasks = props.project.tasks || [];
     if (props.task) {
-        const illegalIds = [props.task.id, ...getDescendantIds(props.task.id, tasks)];
+        // Recursive check to identify all sub-task IDs
+        const getIds = (id, list) => {
+            return list.filter(t => t.task_parent_id === id)
+                .reduce((acc, curr) => [...acc, curr.id, ...getIds(curr.id, list)], []);
+        };
+        const illegalIds = [props.task.id, ...getIds(props.task.id, tasks)];
         tasks = tasks.filter(t => !illegalIds.includes(t.id));
     }
-
-    const options = tasks.map(t => ({
-        label: `#${t.id} - ${t.title}`,
-        value: t.id
-    }));
-
-    return [{ label: 'Nessuna (Attività principale)', value: null }, ...options];
+    return [
+        { label: 'Nessuna (Attività principale)', value: null },
+        ...tasks.map(t => ({ label: `#${t.id} - ${t.title}`, value: t.id }))
+    ];
 });
 
 /**
- * Hydrates the form fields when the component mounts or the task prop changes.
+ * Populate form with existing task data or reset to defaults.
  */
 const fillForm = () => {
     if (props.task) {
-        form.title = props.task.title ?? '';
-        form.description = props.task.description ?? '';
-        form.status = props.task.status ?? 'todo';
-        form.priority = props.task.priority ?? 'low';
-        form.type = props.task.type ?? 'feature';
-        form.assignee_id = props.task.assignee_id ?? null;
-        form.progress = props.task.progress ?? 0;
-        form.task_parent_id = props.task.task_parent_id ?? null;
-        form.start_date = props.task.start_date ? props.task.start_date.substring(0, 10) : '';
-        form.due_date = props.task.due_date ? props.task.due_date.substring(0, 10) : '';
+        Object.assign(form, {
+            title: props.task.title ?? '',
+            description: props.task.description ?? '',
+            status: props.task.status ?? 'todo',
+            priority: props.task.priority ?? 'low',
+            type: props.task.type ?? 'feature',
+            assignee_id: props.task.assignee_id ?? null,
+            progress: props.task.progress ?? 0,
+            task_parent_id: props.task.task_parent_id ?? null,
+            start_date: props.task.start_date?.substring(0, 10) ?? '',
+            due_date: props.task.due_date?.substring(0, 10) ?? '',
+        });
     } else {
         form.reset();
-        form.project_id = props.project.id;
-        form.team_id = props.project.team_id;
     }
 };
 
 onMounted(fillForm);
-watch(() => props.task, fillForm, { immediate: true, deep: true });
+watch(() => props.task, fillForm, { deep: true });
 
-/**
- * Handles form submission for both Create and Update actions.
- */
 const submit = () => {
-    const options = {
-        onSuccess: () => emit('close'),
-        preserveScroll: true,
-    };
-    if (props.task?.id) {
-        form.put(route('tasks.update', props.task.id), options);
-    } else {
-        form.post(route('tasks.store'), options);
-    }
+    const options = { onSuccess: () => emit('close'), preserveScroll: true };
+    props.task?.id ? form.put(route('tasks.update', props.task.id), options)
+        : form.post(route('tasks.store'), options);
 };
 </script>
 
@@ -164,43 +168,63 @@ const submit = () => {
                 <InputError :message="form.errors.title" />
             </div>
 
-            <div class="mb-6 space-y-2">
-                <label class="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1">Attività Superiore</label>
-                <Select v-model="form.task_parent_id" :options="availableParentOptions"
-                        optionLabel="label" optionValue="value" filter
-                        placeholder="Cerca attività genitore..." class="w-full custom-prime-select" />
-                <p class="text-[10px] text-gray-600 ml-1 italic">Collega questa attività a un genitore per creare una gerarchia.</p>
-            </div>
-
             <div class="space-y-4 text-sm">
                 <div class="grid grid-cols-3 items-center">
-                    <div class="text-gray-500 flex items-center"><i class="fas fa-circle-notch mr-3 w-4"></i> Stato</div>
+                    <div class="text-gray-500 flex items-center">
+                        <i class="fas fa-sitemap mr-3 w-4"></i> Genitore
+                    </div>
+                    <Select v-model="form.task_parent_id"
+                            :options="availableParentOptions"
+                            optionLabel="label"
+                            optionValue="value"
+                            filter
+                            placeholder="Nessuna attività principale"
+                            class="col-span-2 custom-prime-ghost" />
+                </div>
+
+                <div class="grid grid-cols-3 items-center">
+                    <div class="text-gray-500 flex items-center">
+                        <i class="fas fa-circle-notch mr-3 w-4"></i> Stato
+                    </div>
                     <Select v-model="form.status" :options="statusOptions" optionLabel="label" optionValue="value"
                             class="col-span-2 custom-prime-ghost" />
                 </div>
 
                 <div class="grid grid-cols-3 items-center">
-                    <div class="text-gray-500 flex items-center"><i class="fas fa-tag mr-3 w-4"></i> Tipologia</div>
+                    <div class="text-gray-500 flex items-center">
+                        <i class="fas fa-tag mr-3 w-4"></i> Tipologia
+                    </div>
                     <Select v-model="form.type" :options="typeOptions" optionLabel="label" optionValue="value"
                             class="col-span-2 custom-prime-ghost" />
                 </div>
 
                 <div class="grid grid-cols-3 items-center">
-                    <div class="text-gray-500 flex items-center"><i class="fas fa-user-circle mr-3 w-4"></i> Assegnatario</div>
-                    <Select v-model="form.assignee_id" :options="assigneeOptions" optionLabel="label" optionValue="value"
-                            filter class="col-span-2 custom-prime-ghost" />
+                    <div class="text-gray-500 flex items-center">
+                        <i class="fas fa-user-circle mr-3 w-4"></i> Assegnatario
+                    </div>
+                    <Select v-model="form.assignee_id"
+                            :options="assigneeOptions"
+                            optionLabel="label"
+                            optionValue="value"
+                            filter
+                            placeholder="Nessun assegnatario"
+                            class="col-span-2 custom-prime-ghost" />
                 </div>
 
                 <div class="grid grid-cols-3 items-center">
-                    <div class="text-gray-500 flex items-center"><i class="far fa-calendar mr-3 w-4"></i> Scadenza</div>
+                    <div class="text-gray-500 flex items-center">
+                        <i class="far fa-calendar mr-3 w-4"></i> Scadenza
+                    </div>
                     <input type="date" v-model="form.due_date"
-                           class="col-span-2 bg-transparent border-none text-white focus:ring-0 rounded-md hover:bg-gray-800 transition-colors">
+                           class="col-span-2 bg-transparent border-none text-white focus:ring-0 p-0 hover:bg-gray-800/50 transition-colors cursor-pointer outline-none">
                 </div>
 
                 <div class="grid grid-cols-3 items-center">
-                    <div class="text-gray-500 flex items-center"><i class="fas fa-flag mr-3 w-4"></i> Priorità</div>
+                    <div class="text-gray-500 flex items-center">
+                        <i class="fas fa-flag mr-3 w-4"></i> Priorità
+                    </div>
                     <Select v-model="form.priority" :options="priorityOptions" optionLabel="label" optionValue="value"
-                            class="col-span-2 custom-prime-ghost uppercase text-[10px] font-bold" />
+                            class="col-span-2 custom-prime-ghost uppercase text-[10px]" />
                 </div>
             </div>
 
@@ -223,9 +247,34 @@ const submit = () => {
             </div>
 
             <div v-if="task" class="pt-8 border-t border-gray-800">
-                <div class="text-gray-500 text-xs font-bold uppercase mb-4 tracking-widest">Commenti</div>
-                <div class="text-gray-600 italic text-sm text-center py-6 bg-gray-800/20 rounded-2xl border border-dashed border-gray-800">
-                    Nessun commento presente.
+                <div class="flex items-center justify-between mb-6">
+                    <div class="text-gray-500 text-xs font-bold uppercase tracking-widest">Commenti</div>
+
+                    <button v-if="$page.props.auth.user.permissions.includes('create tasks') && !isAddingComment"
+                            type="button"
+                            @click.prevent="isAddingComment = true"
+                            class="flex items-center gap-2 text-[#07b4f6] hover:text-white transition-colors text-xs font-bold uppercase">
+                        <i class="fas fa-plus"></i> Aggiungi Commento
+                    </button>
+                </div>
+
+                <CommentEditor
+                    v-if="isAddingComment"
+                    @save="saveComment"
+                    @cancel="isAddingComment = false"
+                />
+
+                <div v-if="!task.comments?.length"
+                     class="text-gray-600 italic text-sm text-center py-6 bg-gray-800/20 rounded-2xl border border-dashed border-gray-800">
+                    Ancora nessun commento.
+                </div>
+
+                <div v-else class="space-y-4">
+                    <CommentItem
+                        v-for="comment in updatedTask.comments"
+                        :key="comment.id"
+                        :comment="comment"
+                    />
                 </div>
             </div>
         </form>
@@ -241,38 +290,29 @@ const submit = () => {
 </template>
 
 <style scoped>
-/* Scoped styles to override PrimeVue defaults for the dark theme */
-:deep(.custom-prime-select) {
-    background: #1f2937 !important;
-    border: 1px solid #374151 !important;
-    border-radius: 0.75rem !important;
-    color: white !important;
-}
-
-:deep(.custom-prime-ghost) {
+.custom-prime-ghost {
     background: transparent !important;
     border: none !important;
-    color: white !important;
     box-shadow: none !important;
 }
 
-:deep(.p-select-panel) {
-    background: #111827 !important;
-    border: 1px solid #374151 !important;
+.custom-prime-ghost .p-select-label {
+    padding: 0 !important; /* Rimuove il padding interno per allinearsi all'input date p-0 */
+    color: #f3f4f6 !important; /* text-gray-100 */
 }
 
-:deep(.p-select-option) {
-    color: #9ca3af !important;
+/* Rimuove l'icona della freccia se vuoi un look minimale "inline edit" */
+.custom-prime-ghost .p-select-dropdown {
+    display: none !important;
 }
 
-:deep(.p-select-option:hover) {
-    background: #1f2937 !important;
-    color: #07b4f6 !important;
+/* Stile per l'input date nativo per farlo somigliare a PrimeVue */
+input[type="date"]::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    opacity: 0.5;
 }
 
-:deep(.p-select-filter-input) {
-    background: #030712 !important;
-    border: 1px solid #374151 !important;
-    color: white !important;
+input[type="date"]::-webkit-calendar-picker-indicator:hover {
+    opacity: 1;
 }
 </style>

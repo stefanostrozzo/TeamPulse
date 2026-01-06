@@ -48,9 +48,11 @@ class TaskController extends Controller
 
     /**
      * Update the specified task in storage.
-     * * @param Request $request
+     * @param Request $request
      * @param Task $task
      * @return \Illuminate\Http\RedirectResponse
+     * @throws \Throwable
+     *
      */
     public function update(Request $request, Task $task)
     {

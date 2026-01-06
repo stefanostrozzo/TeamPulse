@@ -57,23 +57,6 @@ class ProjectController extends Controller
             ->with('status', 'Project successfully created!');
     }
 
-
-    /**
-     * Retrieve a specific project's data.
-     * * @param int $id
-     * @return Project
-     */
-    public function getElement($id)
-    {
-        $project = Project::with(['tasks.assignee', 'members', 'tasks'])->findOrFail($id);
-
-        // Scope the permission check to the project's owning team
-        setPermissionsTeamId($project->team_id);
-        $this->authorize('view all projects');
-
-        return $project;
-    }
-
     /**
      * Updates the designed project
      * @param Request $request
