@@ -104,10 +104,10 @@ onBeforeUnmount(() => {
             </div>
 
             <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-all translate-x-2 group-hover:translate-x-0">
-                <button v-if="comment.can_edit && !isEditing" @click="isEditing = true" class="p-2 text-gray-400 hover:text-[#07b4f6] hover:bg-[#07b4f6]/10 rounded-lg transition-all">
+                <button type="button" v-if="comment.can_edit && !isEditing" @click="isEditing = true" class="p-2 text-gray-400 hover:text-[#07b4f6] hover:bg-[#07b4f6]/10 rounded-lg transition-all">
                     <i class="fas fa-edit text-xs"></i>
                 </button>
-                <button v-if="comment.can_delete" @click="deleteComment" class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all">
+                <button type="button" v-if="comment.can_delete" @click="deleteComment" class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all">
                     <i class="fas fa-trash text-xs"></i>
                 </button>
             </div>
@@ -144,7 +144,6 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
-.tiptap:focus { outline: none; }
 :deep(.prose ul) { list-style-type: disc; padding-left: 1.5rem; }
 :deep(.prose img) { border-radius: 0.75rem; margin: 1rem 0; }
 </style>

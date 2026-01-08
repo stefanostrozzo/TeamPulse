@@ -25,6 +25,6 @@ class CommentPolicy
      */
     public function delete(User $user, Comment $comment): bool
     {
-        return $user->hasPermissionTo('delete comments');
+        return $user->hasPermissionTo('manage comments');
     }
 }
