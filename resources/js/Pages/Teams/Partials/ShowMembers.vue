@@ -2,6 +2,7 @@
 import { computed, ref } from 'vue';
 import { useForm, usePage, router } from '@inertiajs/vue3';
 import Swal from 'sweetalert2';
+import TextInput from '@/Components/Items/TextInput.vue';
 
 /**
  * Component Props
@@ -246,11 +247,11 @@ const removeMember = (user) => {
                     <form @submit.prevent="sendInvitation" class="space-y-4">
                         <div>
                             <label class="block text-xs font-bold text-gray-500 uppercase mb-1 ml-1">Email</label>
-                            <input
+                            <TextInput
                                 v-model="inviteForm.email"
                                 type="email"
                                 required
-                                class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-2 text-white focus:ring-2 focus:ring-[#07b4f6] outline-none"
+                                class="w-full"
                             />
                         </div>
 

@@ -24,8 +24,8 @@ return new class extends Migration
                 ->cascadeOnDelete();
 
             // Comment content
-            $table->text('content');
-            
+            $table->longText('content');
+
             $table->timestamps();
         });
     }

@@ -27,14 +27,14 @@ class PermissionSeeder extends Seeder
             'delete projects',
             'view all projects',
 
-            // Task Management
+            // Task & comment Management
             'create tasks',
             'edit tasks',
             'delete tasks',
             'assign tasks',
             'move tasks',
             'post comments',
-            'delete comments',
+            'manage comments',
 
             // Communication & Collaboration
             'manage watchers',
@@ -63,6 +63,7 @@ class PermissionSeeder extends Seeder
             'assign tasks',
             'move tasks',
             'post comments',
+            'manage comments',
             'manage watchers',
             'change member roles'
         ]);
