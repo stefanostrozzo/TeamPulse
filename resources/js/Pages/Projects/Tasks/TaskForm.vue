@@ -302,11 +302,6 @@ const submit = () => {
     color: #f3f4f6 !important; /* text-gray-100 */
 }
 
-/* Rimuove l'icona della freccia se vuoi un look minimale "inline edit" */
-.custom-prime-ghost {
-    display: none !important;
-}
-
 /* Stile per l'input date nativo per farlo somigliare a PrimeVue */
 input[type="date"]::-webkit-calendar-picker-indicator {
     cursor: pointer;
