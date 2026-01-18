@@ -15,7 +15,7 @@ Route::get('/', [DashboardController::class, 'index'])
     ->name('home');
 
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'web'])->group(function () {
     //Profile routes
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -23,8 +23,9 @@ Route::middleware('auth')->group(function () {
 
     //Team routes
     Route::post('/teams/switch/{team}', [TeamController::class, 'switch'])->name('teams.switch');
-    Route::resource('teams', TeamController::class)->only(['store', 'update', 'destroy']);
     Route::delete('/teams/{team}/members/{user}', [TeamController::class, 'removeMember'])->name('teams.members.remove');
+    Route::resource('teams', TeamController::class)->only(['store', 'update', 'destroy']);
+
     Route::post('/teams/invite', [TeamController::class, 'addMember'])->name('teams.invite');
     Route::put('/teams/{team}/members/roles', [TeamController::class, 'updateMemberRole'])->name('teams.members.updateRole');
 

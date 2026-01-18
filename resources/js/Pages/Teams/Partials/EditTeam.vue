@@ -94,6 +94,7 @@ const cancel = () => {
 
                 <button
                     type="submit"
+                    v-if="team.can_manage_team"
                     :disabled="form.processing"
                     class="flex items-center gap-2 px-6 py-2 rounded-xl text-sm font-bold text-white bg-[#07b4f6] hover:bg-[#06a3dd] disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-[#07b4f6]/20"
                 >

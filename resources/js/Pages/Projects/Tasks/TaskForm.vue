@@ -5,6 +5,7 @@ import InputError from '@/Components/Items/InputError.vue';
 import Select from 'primevue/select';
 import CommentEditor from '../Comments/CommentEditor.vue';
 import CommentItem from '../Comments/CommentItem.vue';
+import TextInput from '@/Components/Items/TextInput.vue';
 
 /**
  * Component Props
@@ -160,7 +161,7 @@ const submit = () => {
             </div>
         </div>
 
-        <form @submit.prevent="submit" class="flex-grow p-8 space-y-8 pb-32 overflow-y-auto custom-scrollbar">
+        <form @submit.prevent="submit" class="grow p-8 space-y-8 pb-32 overflow-y-auto custom-scrollbar">
             <div>
                 <textarea v-model="form.title" rows="1"
                           class="w-full bg-transparent border-none text-3xl font-bold text-white placeholder-gray-700 focus:ring-0 resize-none p-0 overflow-hidden"
@@ -215,8 +216,8 @@ const submit = () => {
                     <div class="text-gray-500 flex items-center">
                         <i class="far fa-calendar mr-3 w-4"></i> Scadenza
                     </div>
-                    <input type="date" v-model="form.due_date"
-                           class="col-span-2 bg-transparent border-none text-white focus:ring-0 p-0 hover:bg-gray-800/50 transition-colors cursor-pointer outline-none">
+                    <TextInput type="date" v-model="form.due_date"
+                           class="col-span-2 bg-transparent border-none text-white focus:ring-0 p-0 hover:bg-gray-800/50 transition-colors cursor-pointer outline-none"/>
                 </div>
 
                 <div class="grid grid-cols-3 items-center">
@@ -280,7 +281,7 @@ const submit = () => {
         </form>
 
         <div class="absolute bottom-0 left-0 w-full p-6 bg-gray-900 border-t border-gray-800 flex justify-between items-center">
-            <button @click="submit" :disabled="form.processing"
+            <button v-if="$page.props.auth.user.permissions.includes('edit tasks')" @click="submit" :disabled="form.processing"
                     class="bg-[#07b4f6] hover:bg-[#06a3de] text-white px-8 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-[#07b4f6]/20 transition-all active:scale-95 disabled:opacity-50">
                 <span v-if="form.processing">Salvataggio...</span>
                 <span v-else>{{ task ? 'Aggiorna Attività' : 'Crea Attività' }}</span>
@@ -296,14 +297,9 @@ const submit = () => {
     box-shadow: none !important;
 }
 
-.custom-prime-ghost .p-select-label {
+.custom-prime-ghost {
     padding: 0 !important; /* Rimuove il padding interno per allinearsi all'input date p-0 */
     color: #f3f4f6 !important; /* text-gray-100 */
-}
-
-/* Rimuove l'icona della freccia se vuoi un look minimale "inline edit" */
-.custom-prime-ghost .p-select-dropdown {
-    display: none !important;
 }
 
 /* Stile per l'input date nativo per farlo somigliare a PrimeVue */
