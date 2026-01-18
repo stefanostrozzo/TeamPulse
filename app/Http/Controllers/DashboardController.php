@@ -42,9 +42,9 @@ class DashboardController extends Controller
                     $user->unsetRelation('permissions');
 
                     return array_merge($team->toArray(), [
-                        'can_delete' => $user->can('delete team'),
-                        'can_manage_team' => $user->can('manage team settings'),
-                        'can_edit_roles' => $user->can('change member roles'),
+                        'can_delete' => $user->can('delete team') ?? false,
+                        'can_manage_team' => $user->can('manage team settings') ?? true,
+                        'can_edit_roles' => $user->can('change member roles') ?? false,
                     ]);
                 }),
 
@@ -72,13 +72,13 @@ class DashboardController extends Controller
                 : [],
 
             'stats' => ($activeTab === 'projects' && $currentTeamId) ? [
-                'total'     => Project::where('team_id', $currentTeamId)->count(),
-                'active'    => Project::where('team_id', $currentTeamId)->where('status', 'active')->count(),
-                'completed' => Project::where('team_id', $currentTeamId)->where('status', 'completed')->count(),
+                'total'     => Project::where('team_id', $currentTeamId)->count() ?? 0,
+                'active'    => Project::where('team_id', $currentTeamId)->where('status', 'active')->count() ?? 0,
+                'completed' => Project::where('team_id', $currentTeamId)->where('status', 'completed')->count() ?? 0,
                 'overdue'   => Project::where('team_id', $currentTeamId)
                     ->where('status', 'active')
                     ->where('end_date', '<', now())
-                    ->count(),
+                    ->count() ?? 0,
             ] : null,
 
             // Management Data: Replaces the manual fetch() calls for Permissions tab
