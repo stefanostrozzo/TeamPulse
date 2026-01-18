@@ -65,7 +65,8 @@ class PermissionSeeder extends Seeder
             'post comments',
             'manage comments',
             'manage watchers',
-            'change member roles'
+            'change member roles',
+            'delete tasks'
         ]);
 
         //Member role
@@ -73,6 +74,7 @@ class PermissionSeeder extends Seeder
         $member->givePermissionTo([
             'create tasks',
             'edit tasks',
+            'delete tasks',
             'move tasks',
             'post comments',
         ]);

@@ -16,46 +16,32 @@ class SetTeamContext
      * It prioritizes the team ID from the route parameters (RESTful context)
      * and falls back to the user's current_team_id for general requests.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure  $next
-     * @return \Symfony\Component\HttpFoundation\Response
-     */
+     * */
     public function handle(Request $request, Closure $next): Response
     {
+        \Log::info('Middleware SetTeamContext eseguito per il team: ' . $request->route('team'));
         $teamId = null;
 
-        /**
-         * 1. Route Parameter Check
-         * If the URL contains a {team} parameter (e.g., /teams/5/members),
-         * we extract the ID to ensure the authorization check happens against the correct team.
-         */
-        $team = $request->route('team');
+        //Retrieves the team from the route
+        $teamParam = $request->route('team');
 
-        if ($team instanceof \App\Models\Team) {
-            $teamId = $team->id;
-        } elseif (is_numeric($team)) {
-            $teamId = $team;
+        //Manage all cases for Team
+        if ($teamParam instanceof \App\Models\Team) {
+            $teamId = $teamParam->id;
+        } elseif (is_numeric($teamParam) || is_string($teamParam)) {
+            $teamId = $teamParam;
         }
 
-        /**
-         * 2. User Preference Fallback
-         * If no team is explicitly defined in the route, we fall back to
-         * the user's active team session/preference.
-         */
+        //Fallback
         if (!$teamId && Auth::check()) {
             $teamId = Auth::user()->current_team_id;
         }
 
-        /**
-         * 3. Apply Context
-         * If a team context is identified, we set the global ID for Spatie's multi-team
-         * feature and merge the team object into the request for easy access.
-         */
         if ($teamId) {
+            //Set global context for Spatie
             setPermissionsTeamId($teamId);
 
             if (Auth::check() && !$request->has('current_team')) {
-                // Ensure the current_team object is available for Inertia/Blade views
                 $request->merge(['current_team' => Auth::user()->currentTeam]);
             }
         }

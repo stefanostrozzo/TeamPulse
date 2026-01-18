@@ -64,9 +64,6 @@ class TeamController extends Controller
             setPermissionsTeamId($team->id);
             $request->user()->assignRole('owner');
 
-            // 4. Automatically switch to the newly created team
-            $request->user()->update(['current_team_id' => $team->id]);
-
             return redirect()->route('home', ['tab' => 'teams'])
                 ->with('status', 'Team creato correttamente!');
         });
@@ -220,6 +217,12 @@ class TeamController extends Controller
     {
         setPermissionsTeamId($team->id);
 
+        if (auth()->check()) {
+            auth()->user()->unsetRelation('roles');
+            auth()->user()->unsetRelation('permissions');
+
+        }
+
         $this->authorize('remove members');
 
         $isOwner = $team->users()->where('user_id', $user->id)->where('role', 'owner')->exists();
@@ -227,7 +230,7 @@ class TeamController extends Controller
         if ($isOwner && $team->users()->where('role', 'owner')->count() <= 1) {
             return back()->withErrors(['error' => 'Il team deve avere almeno un proprietario.']);
         }
-        $beforeCount = $team->users()->count();
+
         $team->users()->detach($user->id);
 
         if ($user->current_team_id === $team->id) {

@@ -38,8 +38,12 @@ class DashboardController extends Controller
                 ->map(function ($team) use ($user) {
                     setPermissionsTeamId($team->id);
 
+                    $user->unsetRelation('roles');
+                    $user->unsetRelation('permissions');
+
                     return array_merge($team->toArray(), [
                         'can_delete' => $user->can('delete team'),
+                        'can_manage_team' => $user->can('manage team settings'),
                         'can_edit_roles' => $user->can('change member roles'),
                     ]);
                 }),

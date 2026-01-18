@@ -3,14 +3,14 @@
 namespace Tests\Unit\Models;
 
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 use Tests\TestCase;
 
 class UserTest extends TestCase
 {
-    use RefreshDatabase;
+    use DatabaseTransactions;
 
     public function test_user_can_be_created()
     {
@@ -28,7 +28,7 @@ class UserTest extends TestCase
     public function test_user_has_roles_trait()
     {
         $user = User::factory()->create();
-        
+
         $this->assertTrue(method_exists($user, 'hasRole'));
         $this->assertTrue(method_exists($user, 'assignRole'));
         $this->assertTrue(method_exists($user, 'removeRole'));
@@ -97,7 +97,7 @@ class UserTest extends TestCase
     {
         $user = User::factory()->create();
         $permission = Permission::create(['name' => 'manage-users']);
-        
+
         $user->givePermissionTo($permission);
         $this->assertTrue($user->hasPermissionTo('manage-users'));
 

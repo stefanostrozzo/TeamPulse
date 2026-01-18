@@ -30,6 +30,13 @@ class HandleInertiaRequests extends Middleware
     public function share(Request $request): array
     {
         $user = $request->user();
+        if ($user) {
+            setPermissionsTeamId($user->current_team_id);
+
+            $user->unsetRelation('roles');
+            $user->unsetRelation('permissions');
+        }
+
         $shared = [
             ...parent::share($request),
             'auth' => [

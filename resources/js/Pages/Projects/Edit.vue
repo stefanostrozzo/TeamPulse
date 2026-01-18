@@ -1,6 +1,6 @@
 <script setup>
-import { useForm } from '@inertiajs/vue3';
-import { onMounted, watch } from 'vue';
+import { useForm, usePage } from '@inertiajs/vue3';
+import { onMounted, watch, computed } from 'vue';
 import TextInput from '@/Components/Items/TextInput.vue';
 import InputError from '@/Components/Items/InputError.vue';
 
@@ -19,6 +19,7 @@ const props = defineProps({
     }
 });
 
+const page = usePage();
 const emit = defineEmits(['close', 'confirmDelete']);
 
 /**
@@ -158,7 +159,7 @@ const submit = () => {
 
             <div class="md:col-span-2 flex justify-end space-x-4 mt-8 pt-6 border-t border-gray-800">
                 <button
-                    v-if="project && $page.props.auth.user.permissions.includes('delete projects')"
+                    v-if="project && page.props.auth.user.permissions.includes('delete projects')"
                     type="button"
                     @click="$emit('confirmDelete', project)"
                     class="px-6 py-2.5 text-sm font-semibold text-red-500 hover:text-red-400 hover:bg-red-500/10 rounded-xl transition-all"
@@ -166,7 +167,7 @@ const submit = () => {
                     <i class="fas fa-trash-alt mr-2"></i> Elimina Progetto
                 </button>
                 <button
-                    v-if="(project && $page.props.auth.user.permissions.includes('edit projects')) || (!project && $page.props.auth.user.permissions.includes('create projects'))"
+                    v-if="(project && page.props.auth.user.permissions.includes('edit projects')) || (!project && page.props.auth.user.permissions.includes('create projects'))"
                     type="submit" :disabled="form.processing"
                     class="px-8 py-2.5 bg-gradient-to-r from-[#07b4f6] to-cyan-500 text-white rounded-xl font-bold shadow-lg shadow-[#07b4f6]/20 hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
                 >
