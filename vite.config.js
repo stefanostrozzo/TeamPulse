@@ -19,4 +19,14 @@ export default defineConfig({
         }),
         tailwindcss(),
     ],
+    build: {
+        rollupOptions: {
+            output: {
+                manualChunks: {
+                    'apexcharts-vendor': ['apexcharts', 'vue3-apexcharts'],
+                    'ui-vendor': ['sweetalert2', '@inertiajs/vue3'],
+                }
+            }
+        }
+    }
 });

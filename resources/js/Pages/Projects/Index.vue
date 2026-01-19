@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import Swal from 'sweetalert2';
 import { router } from '@inertiajs/vue3';
 
@@ -21,7 +21,8 @@ const props = defineProps({
     currentTeamId: {
         type: Number,
         required: true
-    }
+    },
+    initialProjectId: Number
 });
 
 const isModalOpen = ref(false);
@@ -87,6 +88,14 @@ const backToGrid = () => {
     selectedProject.value = null;
 };
 
+onMounted(() => {
+    if (props.initialProjectId) {
+        const project = props.projects.find(p => p.id === props.initialProjectId);
+        if (project) {
+            handleOpenProject(project);
+        }
+    }
+});
 </script>
 
 <template>
@@ -104,7 +113,7 @@ const backToGrid = () => {
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-8">
                     <div
                         @click="createProject"
-                        class="group cursor-pointer border-2 border-dashed border-gray-700 rounded-xl flex flex-col items-center justify-center p-8 hover:border-[#07b4f6] hover:bg-[#07b4f6]/5 transition-all duration-300 min-h-[250px]"
+                        class="group cursor-pointer border-2 border-dashed border-gray-700 rounded-xl flex flex-col items-center justify-center p-8 hover:border-[#07b4f6] hover:bg-[#07b4f6]/5 transition-all duration-300 min-h-62.5"
                     >
                         <div class="w-12 h-12 rounded-full bg-gray-800 flex items-center justify-center mb-4 group-hover:bg-[#07b4f6] transition-colors">
                             <i class="fas fa-plus text-gray-400 group-hover:text-white"></i>

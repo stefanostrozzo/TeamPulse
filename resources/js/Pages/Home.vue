@@ -24,6 +24,13 @@ const showCreateTeamModal = ref(false);
 // We read the current tab from the URL to highlight the sidebar icons
 const currentTab = computed(() => page.props.activeTab || 'dashboard');
 
+const selectedProjectIdFromDashboard = ref(null);
+
+const goToProjectDetail = (id) => {
+    selectedProjectIdFromDashboard.value = id;
+    activeTab.value = 'projects';
+};
+
 /**
  * Navigate using Inertia router.
  */
@@ -124,6 +131,7 @@ onMounted(() => {
                             :projects="page.props.projects"
                             :projectStats="page.props.stats"
                             :current-team-id="page.props.currentTeamId"
+                            :initialProjectId="selectedProjectIdFromDashboard"
                         />
                     </div>
 
