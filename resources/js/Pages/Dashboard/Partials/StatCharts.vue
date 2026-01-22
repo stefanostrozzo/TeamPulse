@@ -9,20 +9,17 @@ const props = defineProps({
 });
 
 /**
- * Shared configuration to ensure charts blend seamlessly with the dark UI.
- * Setting background to 'transparent' removes the default gray canvas.
- */
-const transparentChart = { background: 'transparent' };
-
-/**
  * Configuration for the Task Status Donut Chart.
  * Labels are localized to Italian.
  */
 const pieOptions = {
     chart: {
-        ...transparentChart,
+        background: 'transparent',
+        fontFamily: 'inherit',
+        // Forced resize handling
+        redrawOnParentResize: true,
+        redrawOnWindowResize: true,
         type: 'donut',
-        fontFamily: 'inherit'
     },
     theme: { mode: 'dark' },
     // Localized labels for the pie chart segments
@@ -59,7 +56,10 @@ const pieOptions = {
  */
 const barOptions = {
     chart: {
-        ...transparentChart,
+        background: 'transparent',
+        fontFamily: 'inherit',
+        redrawOnParentResize: true,
+        redrawOnWindowResize: true,
         type: 'bar',
         toolbar: { show: false }
     },
@@ -103,14 +103,17 @@ const barSeries = [{
 
 <template>
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div class="bg-gray-900 rounded-2xl border border-gray-800 p-6 shadow-sm">
+        <div class="bg-gray-900 rounded-2xl border border-gray-800 p-6 min-h-100 flex flex-col">
             <h3 class="text-lg font-semibold text-white mb-6">Stato delle mie attività</h3>
-            <VueApexCharts width="100%" height="300" :options="pieOptions" :series="myTasksStats.series" />
+            <div class="grow">
+                <VueApexCharts width="100%" height="100%" :options="pieOptions" :series="myTasksStats.series" />
+            </div>
         </div>
-
-        <div class="bg-gray-900 rounded-2xl border border-gray-800 p-6 shadow-sm">
+        <div class="bg-gray-900 rounded-2xl border border-gray-800 p-6 min-h-100 flex flex-col">
             <h3 class="text-lg font-semibold text-white mb-6">Attività per priorità</h3>
-            <VueApexCharts width="100%" height="300" :options="barOptions" :series="barSeries" />
+            <div class="grow">
+                <VueApexCharts width="100%" height="100%" :options="barOptions" :series="barSeries" />
+            </div>
         </div>
     </div>
 </template>

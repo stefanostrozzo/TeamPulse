@@ -1,6 +1,6 @@
 <script setup>
 const props = defineProps({ project: Object });
-const emit = defineEmits(['open-project']); // Definisci l'evento
+const emit = defineEmits(['open-project']);
 </script>
 
 <template>

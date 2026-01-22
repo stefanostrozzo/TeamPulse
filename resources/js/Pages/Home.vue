@@ -25,10 +25,21 @@ const showCreateTeamModal = ref(false);
 const currentTab = computed(() => page.props.activeTab || 'dashboard');
 
 const selectedProjectIdFromDashboard = ref(null);
+const selectedTeamIdFromDashboard = ref(null);
 
 const goToProjectDetail = (id) => {
     selectedProjectIdFromDashboard.value = id;
-    activeTab.value = 'projects';
+    navigateTo('projects');
+};
+
+/**
+ * Handles navigation from Dashboard to the Teams section.
+ * Updates state and triggers an Inertia router visit to maintain SPA consistency.
+ * * @param {Number|null} id - The specific Team ID to focus on, if any.
+ */
+const goToTeamDetail = (id) => {
+    selectedTeamIdFromDashboard.value = id;
+    navigateTo('teams');
 };
 
 /**
@@ -111,18 +122,21 @@ onMounted(() => {
 
             <main class="flex-1 p-6 overflow-y-auto bg-gray-50 dark:bg-gray-950">
                 <AuthenticatedLayout
-                    :user="user"
                     @toggle-sidebar="collapsed = !collapsed"
                     @open-notifications="notificationOpen = true"
                 >
                     <div v-if="currentTab === 'dashboard'">
-                        <DashboardIndex/>
+                        <DashboardIndex
+                            @navigate-to-project="goToProjectDetail"
+                            @navigate-to-team="goToTeamDetail"
+                        />
                     </div>
 
                     <div v-else-if="currentTab === 'teams'">
                         <TeamIndex
                             :teams="page.props.userTeams"
                             :autoOpenCreate="showCreateTeamModal"
+                            :initial-team-id="selectedTeamIdFromDashboard"
                         />
                     </div>
 

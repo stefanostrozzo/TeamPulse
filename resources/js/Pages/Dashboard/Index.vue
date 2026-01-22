@@ -8,11 +8,25 @@ const page = usePage();
 const user = computed(() => page.props.auth?.user ?? null);
 const homeData = computed(() => page.props.homeData);
 
+/**
+ * Emits navigation events to the parent Home component.
+ * Allows switching between dashboard, projects, and team management.
+ */
 const emit = defineEmits(['navigate-to-project','navigate-to-team']);
 
 const handleProjectRedirect = (projectId) => {
     emit('navigate-to-project', projectId);
 };
+
+/**
+ * Triggered when the manager clicks the 'Gestisci Team' banner.
+ * Passes the intent to the Home orchestrator to switch tabs.
+ */
+const goToTeams = () => {
+    const teamId = user.value?.current_team_id;
+    emit('navigate-to-team', teamId);
+};
+
 </script>
 
 <template>
