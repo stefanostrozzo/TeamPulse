@@ -16,8 +16,9 @@ import ShowTeamMembers from "./Partials/ShowMembers.vue";
  */
 const props = defineProps({
     teams: { type: Array, default: () => [] },
-    autoOpenCreate: { type: Boolean, default: false }
-});
+    autoOpenCreate: { type: Boolean, default: false },
+    initialTeamId: Number
+})
 
 const page = usePage();
 // Track the currently active team from the auth user state
@@ -125,6 +126,13 @@ const backToGrid = () => {
  */
 onMounted(() => {
     if (props.autoOpenCreate) createTeam();
+
+    if (props.initialTeamId) {
+        const teamToOpen = props.teams.find(t => t.id === props.initialTeamId);
+        if (teamToOpen) {
+            openTeamDetail(teamToOpen);
+        }
+    }
 });
 
 </script>
@@ -141,7 +149,7 @@ onMounted(() => {
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-8">
                     <div
                         @click="createTeam"
-                        class="group cursor-pointer border-2 border-dashed border-gray-700 rounded-xl flex flex-col items-center justify-center p-8 hover:border-[#07b4f6] hover:bg-[#07b4f6]/5 transition-all duration-300 min-h-[250px]"
+                        class="group cursor-pointer border-2 border-dashed border-gray-700 rounded-xl flex flex-col items-center justify-center p-8 hover:border-[#07b4f6] hover:bg-[#07b4f6]/5 transition-all duration-300 min-h-62.5"
                     >
                         <div class="w-12 h-12 rounded-full bg-gray-800 flex items-center justify-center mb-4 group-hover:bg-[#07b4f6] transition-colors">
                             <i class="fas fa-plus text-gray-400 group-hover:text-white"></i>

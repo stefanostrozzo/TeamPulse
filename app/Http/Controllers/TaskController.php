@@ -28,6 +28,7 @@ class TaskController extends Controller
         $validated = $request->validate([
             'project_id' => 'required|exists:projects,id',
             'team_id' => 'required|exists:teams,id',
+            'assignee_id' => 'required|exists:users,id',
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'status' => 'required|in:todo,in-progress,done,blocked',

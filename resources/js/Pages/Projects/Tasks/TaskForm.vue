@@ -208,6 +208,7 @@ const submit = () => {
                             optionLabel="label"
                             optionValue="value"
                             filter
+                            required
                             placeholder="Nessun assegnatario"
                             class="col-span-2 custom-prime-ghost" />
                 </div>
