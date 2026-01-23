@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from 'vue';
+import { computed, ref, onMounted } from 'vue';
 import { useForm, usePage, router } from '@inertiajs/vue3';
 import Swal from 'sweetalert2';
 import TextInput from '@/Components/Items/TextInput.vue';
@@ -12,7 +12,8 @@ const props = defineProps({
     team: {
         type: Object,
         required: true
-    }
+    },
+    highlightMemberId: Number
 });
 
 /**
@@ -26,7 +27,7 @@ const roleLabels = {
     guest: 'Ospite'
 };
 
-const emit = defineEmits(['back']);
+const emit = defineEmits(['back', 'clear-highlight']);
 const page = usePage();
 
 /**
@@ -158,6 +159,29 @@ const removeMember = (user) => {
         }
     });
 };
+
+onMounted(() => {
+    if (props.highlightMemberId) {
+        const element = document.getElementById(`member-row-${props.highlightMemberId}`);
+        if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+            // 2. Applichiamo lo stile giallo palese (inline)
+            element.style.backgroundColor = '#fef08a';
+            element.style.transition = 'all 0.5s ease';
+            element.style.transform = 'scale(1.02)';
+            element.style.border = '2px solid #eab308';
+            element.style.zIndex = '10';
+
+            setTimeout(() => {
+                element.style.backgroundColor = '';
+                element.style.transform = 'scale(1)';
+                element.style.border = '';
+            }, 1000);
+        }
+        emit('clear-highlight');
+    }
+});
 </script>
 
 <template>
@@ -183,7 +207,7 @@ const removeMember = (user) => {
             <div class="lg:col-span-2 space-y-4">
                 <h3 class="text-lg font-semibold text-white mb-4">Membri ({{ team.users?.length || 0 }})</h3>
 
-                <div v-for="user in team.users" :key="user.id"
+                <div v-for="user in team.users" :key="user.id" :id="'member-row-' + user.id"
                      class="flex items-center justify-between p-4 bg-gray-800/50 border border-gray-700 rounded-xl hover:border-gray-600 transition-all"
                 >
                     <div class="flex items-center gap-4">
