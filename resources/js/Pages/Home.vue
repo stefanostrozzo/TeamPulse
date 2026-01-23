@@ -26,6 +26,36 @@ const currentTab = computed(() => page.props.activeTab || 'dashboard');
 
 const selectedProjectIdFromDashboard = ref(null);
 const selectedTeamIdFromDashboard = ref(null);
+const selectedTaskIdFromSearch = ref(null);
+const selectedMemberIdFromSearch = ref(null);
+
+const goToSearchResult = (data) => {
+    const { type, id, projectId } = data;
+
+    selectedProjectIdFromDashboard.value = null;
+    selectedTeamIdFromDashboard.value = null;
+    selectedTaskIdFromSearch.value = null;
+    selectedMemberIdFromSearch.value = null;
+
+    if (type === 'project') {
+        selectedProjectIdFromDashboard.value = id;
+        navigateTo('projects');
+    }
+    else if (type === 'team') {
+        selectedTeamIdFromDashboard.value = id;
+        navigateTo('teams');
+    }
+    else if (type === 'task') {
+        selectedProjectIdFromDashboard.value = projectId;
+        selectedTaskIdFromSearch.value = id;
+        navigateTo('projects');
+    }
+    else if (type === 'member') {
+        selectedMemberIdFromSearch.value = id;
+        selectedTeamIdFromDashboard.value = page.props.auth.user.current_team_id;
+        navigateTo('teams');
+    }
+};
 
 const goToProjectDetail = (id) => {
     selectedProjectIdFromDashboard.value = id;
@@ -118,7 +148,10 @@ onMounted(() => {
         </SidebarContainer>
 
         <div class="flex-1 flex flex-col min-w-0 overflow-hidden text-gray-900 dark:text-gray-100">
-            <Topbar @toggle-sidebar="collapsed = !collapsed" @open-notifications="notificationOpen = true" />
+            <Topbar @toggle-sidebar="collapsed = !collapsed" @open-notifications="notificationOpen = true"
+                @search-navigation="goToSearchResult"
+                :notifications="0"
+            />
 
             <main class="flex-1 p-6 overflow-y-auto bg-gray-50 dark:bg-gray-950">
                 <AuthenticatedLayout
@@ -137,6 +170,8 @@ onMounted(() => {
                             :teams="page.props.userTeams"
                             :autoOpenCreate="showCreateTeamModal"
                             :initial-team-id="selectedTeamIdFromDashboard"
+                            :highlight-member-id="selectedMemberIdFromSearch"
+                            @clear-member-highlight="selectedMemberIdFromSearch = null"
                         />
                     </div>
 
@@ -146,6 +181,8 @@ onMounted(() => {
                             :projectStats="page.props.stats"
                             :current-team-id="page.props.currentTeamId"
                             :initialProjectId="selectedProjectIdFromDashboard"
+                            :highlight-task-id="selectedTaskIdFromSearch"
+                            @clear-task-highlight="selectedTaskIdFromSearch = null"
                         />
                     </div>
 

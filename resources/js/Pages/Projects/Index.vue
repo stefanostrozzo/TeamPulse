@@ -22,7 +22,8 @@ const props = defineProps({
         type: Number,
         required: true
     },
-    initialProjectId: Number
+    initialProjectId: Number,
+    highlightTaskId: Number,
 });
 
 const isModalOpen = ref(false);
@@ -90,10 +91,8 @@ const backToGrid = () => {
 
 onMounted(() => {
     if (props.initialProjectId) {
-        const project = props.projects.find(p => p.id === props.initialProjectId);
-        if (project) {
-            handleOpenProject(project);
-        }
+        selectedProjectId.value = props.initialProjectId;
+        currentView.value = 'detail';
     }
 });
 </script>
@@ -135,6 +134,9 @@ onMounted(() => {
                 <ShowElement
                     :project="selectedProject"
                     @back="backToGrid"
+                    :tasks="selectedProject.tasks"
+                    :highlight-task-id="highlightTaskId"
+                    @clear-highlight="$emit('clear-task-highlight')"
                 />
             </div>
         </Transition>

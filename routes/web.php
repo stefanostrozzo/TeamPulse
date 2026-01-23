@@ -8,6 +8,7 @@ use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\TeamController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\CommentController;
+use App\Http\Controllers\SearchController;
 
 //Main route for the SPA application
 Route::get('/', [DashboardController::class, 'index'])
@@ -38,6 +39,8 @@ Route::middleware(['auth', 'web'])->group(function () {
 
     Route::post('tasks/{task}/comments', [CommentController::class, 'store'])->name('comments.store');
     Route::resource('comments', CommentController::class)->only(['update', 'destroy']);
+
+    Route::get('/search/global', [SearchController::class, 'global'])->name('search.global');
 });
 
 //Accept invitation route

@@ -17,7 +17,8 @@ import ShowTeamMembers from "./Partials/ShowMembers.vue";
 const props = defineProps({
     teams: { type: Array, default: () => [] },
     autoOpenCreate: { type: Boolean, default: false },
-    initialTeamId: Number
+    initialTeamId: Number,
+    highlightMemberId: Number,
 })
 
 const page = usePage();
@@ -173,7 +174,9 @@ onMounted(() => {
                 <ShowTeamMembers
                     :team="selectedTeam"
                     :key="selectedTeam.id + '-' + (selectedTeam.users?.length || 0)"
+                    :highlight-member-id="highlightMemberId"
                     @back="backToGrid"
+                    @clear-highlight="$emit('clear-member-highlight')"
                 />
             </div>
         </Transition>

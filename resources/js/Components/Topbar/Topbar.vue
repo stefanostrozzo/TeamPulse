@@ -1,5 +1,61 @@
+<script setup>
+import { ref, watch } from 'vue';
+import axios from 'axios';
+
+const emit = defineEmits(['toggle-notifications', 'search-navigation']);
+
+const searchQuery = ref(null);
+const results = ref([]);
+const isDropdownOpen = ref(false);
+
+/**
+ * Funzione per gestire la navigazione al click del risultato
+ */
+const handleSelect = (item) => {
+    emit('search-navigation', {
+        type: item.type,
+        id: item.id,
+        projectId: item.project_id || null
+    });
+
+    searchQuery.value = '';
+    isDropdownOpen.value = false;
+};
+
+// Esempio di chiamata API con debounce (usa lodash o un timeout semplice)
+let searchTimeout;
+watch(searchQuery, (val) => {
+    clearTimeout(searchTimeout);
+    if (val.length < 2) {
+        results.value = [];
+        isDropdownOpen.value = false;
+        return;
+    }
+
+    searchTimeout = setTimeout(async () => {
+        try {
+            const response = await axios.get(`/search/global?q=${val}`);
+            const data = response.data;
+
+            const flatResults = [
+                ...(data.projects || []).map(i => ({ ...i, type: 'project', type_label: 'PROGETTI' })),
+                ...(data.tasks || []).map(i => ({ ...i, type: 'task', type_label: 'TASK' })),
+                ...(data.teams || []).map(i => ({ ...i, type: 'team', type_label: 'TEAM' })),
+                ...(data.members || []).map(i => ({ ...i, type: 'member', type_label: 'MEMBRI' })),
+            ];
+
+            results.value = flatResults;
+            isDropdownOpen.value = flatResults.length > 0;
+
+        } catch (e) {
+            console.error("Errore ricerca:", e);
+        }
+    }, 300);
+});
+</script>
+
 <template>
-    <div class="topbar bg-gray-800 border-b border-gray-700 px-6 pt-4 pb-3 flex items-center justify-between">
+    <div class="topbar bg-gray-800 border-b border-gray-700 px-6 pt-5 pb-3 flex items-center justify-between relative">
         <div class="search-container relative w-full max-w-xl">
             <span class="search-icon absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
@@ -7,57 +63,27 @@
                 </svg>
             </span>
             <input
+                v-model="searchQuery"
                 type="text"
-                class="search-input w-full bg-gray-700 rounded-xl pl-11 pr-4 py-2 text-sm text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#07b4f6]"
-                :placeholder="placeholder"
+                class="search-input w-full bg-gray-700 rounded-xl pl-11 pr-4 py-2 text-sm text-white border-transparent focus:border-[#07b4f6] focus:ring-0 transition-all"
+                placeholder="Cerca qualcosa..."
             />
-        </div>
 
-        <div class="topbar-actions flex items-center gap-6">
-            <button class="action-btn w-10 h-10 rounded-xl bg-gray-700 text-gray-100 hover:bg-[#07b4f6] transition relative" @click="$emit('toggle-notifications')">
-                <span v-if="notifications > 0" class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-[10px] flex items-center justify-center">
-                    {{ notifications }}
-                </span>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
-                    <path d="M5.25 7.5A6.75 6.75 0 0112 0.75 6.75 6.75 0 0118.75 7.5v3.818c0 .512.203 1.003.564 1.364l1.061 1.061A1.5 1.5 0 0119.318 15H4.682a1.5 1.5 0 01-1.057-2.557l1.061-1.061c.361-.361.564-.852.564-1.364V7.5z" />
-                    <path d="M8.25 18a3.75 3.75 0 007.5 0h-7.5z" />
-                </svg>
-            </button>
+            <div v-if="isDropdownOpen && results.length > 0" class="absolute top-full left-0 w-full mt-2 bg-gray-900 border border-gray-700 rounded-xl shadow-2xl z-50 overflow-hidden">
+                <div v-for="item in results" :key="item.type + '-' + item.id"
+                     @click="handleSelect(item)"
+                     class="flex justify-between items-center px-4 py-3 hover:bg-gray-800 cursor-pointer group transition-colors">
 
-            <div class="flex items-center gap-3 border-l border-gray-700 pl-6 ml-3">
-                <div class="text-right hidden sm:block">
-                    <p class="text-sm font-semibold text-white leading-tight">
-                        {{ $page.props.auth.user.name }}
-                    </p>
-                    <p v-if="activeTeamName" class="text-[10px] text-[#07b4f6] uppercase font-bold tracking-widest flex items-center justify-end gap-1">
-                        <i class="fas fa-users text-[8px]"></i>
-                        {{ activeTeamName }}
-                    </p>
+                    <div class="flex items-center gap-3">
+                        <div class="w-2 h-2 rounded-full bg-[#07b4f6]"></div>
+                        <span class="text-sm text-gray-200 group-hover:text-white">{{ item.name ?? item.title }}</span>
+                    </div>
+
+                    <span class="text-[10px] text-gray-500 uppercase font-bold">
+                        {{ item.type_label }}
+                    </span>
                 </div>
             </div>
         </div>
     </div>
 </template>
-
-<script setup>
-    import { computed } from 'vue';
-    import { usePage } from '@inertiajs/vue3';
-
-    const page = usePage();
-
-    const props = defineProps({
-        notifications: { type: [String, Number], default: 0 },
-        placeholder: { type: String, default: 'Cerca progetti, task o membri...' },
-    });
-
-    defineEmits(['toggle-notifications']);
-
-    // Logic to find the active team name from the user's team list
-    const activeTeamName = computed(() => {
-        const user = page.props.auth.user;
-        if (!user.current_team_id || !user.teams) return null;
-
-        const team = user.teams.find(t => t.id === user.current_team_id);
-        return team ? team.name : null;
-    });
-</script>

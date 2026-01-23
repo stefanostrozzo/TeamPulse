@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import Swal from 'sweetalert2';
 
 import TaskList from '@/Pages/Projects/Tasks/TaskList.vue';
@@ -8,10 +8,11 @@ import {router} from "@inertiajs/vue3";
 
 const props = defineProps({
     project: Object,
-    tasks: Array
+    tasks: Array,
+    highlightTaskId: Number
 });
 
-const emit = defineEmits(['back']);
+const emit = defineEmits(['back', 'clear-highlight']);
 const activeTab = ref('elenco');
 const refreshCounter = ref(0);
 
@@ -78,6 +79,17 @@ const PROJECT_PRIORITIES = {
     'high': { label: 'Alta', color: 'text-red-400' }
 };
 
+onMounted(() => {
+    if (props.highlightTaskId && props.tasks) {
+        const taskToOpen = props.tasks.find(t => t.id === props.highlightTaskId);
+
+        if (taskToOpen) {
+            editTask(taskToOpen);
+
+            emit('clear-highlight');
+        }
+    }
+});
 </script>
 
 <template>
