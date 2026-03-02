@@ -1,25 +1,15 @@
 <script setup>
-import { computed, ref } from 'vue';
+import { computed } from 'vue';
 import TaskRow from './TaskRow.vue';
 
-const emit = defineEmits(['edit']);
+const emit = defineEmits(['edit', 'toggle', 'expand-all', 'collapse-all']);
 const props = defineProps({
-    tasks: Array
-});
-
-// Set to track expanded task IDs for the tree view
-const expandedTasks = ref(new Set());
-
-/**
- * Toggles a task's expanded state to show/hide subtasks
- */
-const toggleExpand = (taskId) => {
-    if (expandedTasks.value.has(taskId)) {
-        expandedTasks.value.delete(taskId);
-    } else {
-        expandedTasks.value.add(taskId);
+    tasks: Array,
+    expandedTasks: {
+        type: Object,
+        required: true
     }
-};
+});
 
 /**
  * Builds a nested tree structure from a flat array of tasks
@@ -50,6 +40,22 @@ const taskTree = computed(() => {
 
 <template>
     <div class="bg-gray-900/50 rounded-xl border border-gray-800 overflow-hidden">
+        <div class="flex items-center justify-end gap-2 px-4 py-3 border-b border-gray-800 bg-gray-950/30">
+            <button
+                type="button"
+                @click="emit('expand-all')"
+                class="px-3 py-1.5 text-[10px] font-black uppercase tracking-widest rounded-lg bg-gray-800/60 border border-gray-700 text-gray-300 hover:text-white hover:border-[#07b4f6]/40 transition-all"
+            >
+                Espandi tutto
+            </button>
+            <button
+                type="button"
+                @click="emit('collapse-all')"
+                class="px-3 py-1.5 text-[10px] font-black uppercase tracking-widest rounded-lg bg-gray-800/60 border border-gray-700 text-gray-300 hover:text-white hover:border-[#07b4f6]/40 transition-all"
+            >
+                Chiudi tutto
+            </button>
+        </div>
         <table class="w-full text-left border-collapse">
             <thead>
             <tr class="bg-gray-800/50 text-gray-400 text-[10px] uppercase tracking-widest border-b border-gray-800">
@@ -68,7 +74,7 @@ const taskTree = computed(() => {
                     :task="task"
                     :level="0"
                     :expanded-tasks="expandedTasks"
-                    @toggle="toggleExpand"
+                    @toggle="(id) => emit('toggle', id)"
                     @edit="(t) => emit('edit', t)"
                 />
             </template>

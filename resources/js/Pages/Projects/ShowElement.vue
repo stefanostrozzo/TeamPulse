@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import Swal from 'sweetalert2';
 
 import TaskList from '@/Pages/Projects/Tasks/TaskList.vue';
@@ -14,10 +14,41 @@ const props = defineProps({
 
 const emit = defineEmits(['back', 'clear-highlight']);
 const activeTab = ref('elenco');
-const refreshCounter = ref(0);
 
 const isModalOpen = ref(false);
 const selectedTask = ref(null);
+const taskSidebarEl = ref(null);
+const taskHasUnsavedChanges = ref(false);
+const isClosePromptOpen = ref(false);
+
+const onTaskDirtyChange = (dirty) => {
+    taskHasUnsavedChanges.value = !!dirty;
+};
+
+// Tree UI state: persists while this project detail component is alive
+const expandedTasks = ref(new Set());
+
+const parentTaskIds = computed(() => {
+    const tasks = props.project?.tasks || props.tasks || [];
+    const parents = new Set();
+    for (const t of tasks) {
+        if (t.task_parent_id) parents.add(t.task_parent_id);
+    }
+    return parents;
+});
+
+const toggleExpand = (taskId) => {
+    if (expandedTasks.value.has(taskId)) expandedTasks.value.delete(taskId);
+    else expandedTasks.value.add(taskId);
+};
+
+const expandAll = () => {
+    expandedTasks.value = new Set(parentTaskIds.value);
+};
+
+const collapseAll = () => {
+    expandedTasks.value.clear();
+};
 
 const openCreateTask = () => {
     selectedTask.value = null;
@@ -26,12 +57,45 @@ const openCreateTask = () => {
 
 const closeTask = () => {
     isModalOpen.value = false;
-    refreshCounter.value++;
+    taskHasUnsavedChanges.value = false;
     // Timeout to prevent visual glitches during transition
     setTimeout(() => {
         selectedTask.value = null;
     }, 300);
 }
+
+const attemptCloseTask = async () => {
+    if (!taskHasUnsavedChanges.value) {
+        closeTask();
+        return;
+    }
+    if (isClosePromptOpen.value) return;
+
+    isClosePromptOpen.value = true;
+    try {
+        const result = await Swal.fire({
+            target: taskSidebarEl.value || undefined,
+            title: 'Modifiche non salvate',
+            text: 'Hai delle modifiche non confermate. Vuoi uscire e perderle?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Esci senza salvare',
+            cancelButtonText: 'Continua modifica',
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#374151',
+            background: '#1f2937',
+            color: '#ffffff',
+            backdrop: false,
+            heightAuto: false,
+        });
+
+        if (result.isConfirmed) {
+            closeTask();
+        }
+    } finally {
+        isClosePromptOpen.value = false;
+    }
+};
 
 const editTask = (task) => {
     selectedTask.value = task;
@@ -156,7 +220,10 @@ onMounted(() => {
             <div v-if="activeTab === 'elenco'" class="fade-in">
                 <TaskList
                     :tasks="project.tasks"
-                    :key="refreshCounter"
+                    :expanded-tasks="expandedTasks"
+                    @toggle="toggleExpand"
+                    @expand-all="expandAll"
+                    @collapse-all="collapseAll"
                     @edit="editTask"
                 />
             </div>
@@ -166,11 +233,13 @@ onMounted(() => {
                 </div>
 
                 <div v-if="isModalOpen"
-                     @click="closeTask"
+                     @click="attemptCloseTask"
                      class="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 transition-opacity">
                 </div>
 
-                <div :class="[
+                <div
+                    ref="taskSidebarEl"
+                    :class="[
                     'fixed top-0 right-0 h-full w-[35%] bg-gray-900 border-l border-gray-500 z-50 transform transition-transform duration-300 ease-in-out shadow-2xl overflow-y-auto',
                     isModalOpen ? 'translate-x-0' : 'translate-x-full'
                 ]">
@@ -178,8 +247,9 @@ onMounted(() => {
                         v-if="isModalOpen"
                         :project="props.project"
                         :task="selectedTask"
-                        @close="closeTask"
+                        @close="attemptCloseTask"
                         @confirmDelete="openDeleteConfirmation"
+                        @dirty-change="onTaskDirtyChange"
                     />
                 </div>
             </div>

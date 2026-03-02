@@ -26,10 +26,22 @@ class DashboardController extends Controller
         $activeTab = $request->get('tab', 'dashboard');
         $currentTeamId = $user->current_team_id;
 
+        /*
+        |--------------------------------------------------------------------------
+        | One-shot initial project selection
+        |--------------------------------------------------------------------------
+        | initialProjectId is only honored when explicitly provided in the
+        | current request (e.g. from a dashboard quick link or search result).
+        | It is NOT persisted in session, so once you leave that navigation
+        | context it no longer auto-opens a project.
+        */
+        $initialProjectId = $request->integer('initialProjectId') ?: null;
+
         return Inertia::render('Home', [
             'activeTab' => $activeTab,
             'currentTeamId' => $currentTeamId,
             'teamsCount' => $user->teams()->count(),
+            'initialProjectId' => $initialProjectId,
 
             /*
             |--------------------------------------------------------------------------

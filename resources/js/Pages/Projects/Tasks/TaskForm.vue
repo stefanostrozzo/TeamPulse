@@ -21,7 +21,7 @@ const updatedTask = computed(() => {
     return props.project.tasks.find(t => t.id === props.task?.id) || props.task;
 });
 
-const emit = defineEmits(['close', 'confirmDelete']);
+const emit = defineEmits(['close', 'confirmDelete', 'dirty-change']);
 
 /**
  * Initialize form state using Inertia's useForm helper.
@@ -72,10 +72,86 @@ const assigneeOptions = computed(() => {
     return [{ label: 'Nessun assegnatario', value: null }, ...members];
 });
 
+const pickFormState = () => ({
+    title: form.title ?? '',
+    description: form.description ?? '',
+    status: form.status ?? 'todo',
+    priority: form.priority ?? 'low',
+    type: form.type ?? 'feature',
+    assignee_id: form.assignee_id ?? null,
+    start_date: form.start_date ?? '',
+    due_date: form.due_date ?? '',
+    progress: Number(form.progress ?? 0),
+    task_parent_id: form.task_parent_id ?? null,
+});
+
+const isCommentDraftDirty = ref(false);
+
+// We only warn on close for unsaved comment drafts.
+const hasUnsavedChanges = computed(() => isCommentDraftDirty.value);
+
+watch(hasUnsavedChanges, (dirty) => emit('dirty-change', dirty), { immediate: true });
+
+// Autosave task fields (AJAX) while editing an existing task.
+const autosaveStatus = ref('idle'); // idle | saving | saved | error
+const autosaveTimer = ref(null);
+const autosaveSuppressed = ref(true);
+const lastSavedState = ref(pickFormState());
+
+const scheduleAutosave = () => {
+    if (!props.task?.id) return; // don't autosave while creating
+    if (autosaveSuppressed.value) return;
+
+    const nextState = pickFormState();
+    const prevState = lastSavedState.value;
+    const nextHash = JSON.stringify(nextState);
+    const prevHash = JSON.stringify(prevState);
+    if (nextHash === prevHash) return;
+
+    if (autosaveTimer.value) clearTimeout(autosaveTimer.value);
+    autosaveStatus.value = 'idle';
+
+    autosaveTimer.value = setTimeout(() => {
+        autosaveStatus.value = 'saving';
+
+        router.put(route('tasks.update', props.task.id), {
+            ...nextState,
+            project_id: props.project.id,
+            team_id: props.project.team_id,
+        }, {
+            preserveState: true,
+            preserveScroll: true,
+            onSuccess: () => {
+                lastSavedState.value = pickFormState();
+                autosaveStatus.value = 'saved';
+                setTimeout(() => {
+                    if (autosaveStatus.value === 'saved') autosaveStatus.value = 'idle';
+                }, 1500);
+            },
+            onError: () => {
+                autosaveStatus.value = 'error';
+            },
+        });
+    }, 700);
+};
+
 /**
  * Persist a new comment to the database.
  */
 const isAddingComment = ref(false);
+const openCommentEditor = () => {
+    isAddingComment.value = true;
+};
+
+const cancelCommentEditor = () => {
+    isAddingComment.value = false;
+    isCommentDraftDirty.value = false;
+};
+
+const onCommentDirtyChange = (dirty) => {
+    isCommentDraftDirty.value = !!dirty;
+};
+
 const saveComment = (htmlContent) => {
     // Ensure the task exists before attempting to comment
     if (!props.task?.id) return;
@@ -85,7 +161,9 @@ const saveComment = (htmlContent) => {
     }, {
         onSuccess: () => {
             isAddingComment.value = false;
+            isCommentDraftDirty.value = false;
         },
+        preserveState: true,
         preserveScroll: true
     });
 };
@@ -115,6 +193,7 @@ const availableParentOptions = computed(() => {
  * Populate form with existing task data or reset to defaults.
  */
 const fillForm = () => {
+    autosaveSuppressed.value = true;
     if (props.task) {
         Object.assign(form, {
             title: props.task.title ?? '',
@@ -131,16 +210,27 @@ const fillForm = () => {
     } else {
         form.reset();
     }
+
+    lastSavedState.value = pickFormState();
+    isCommentDraftDirty.value = false;
+    isAddingComment.value = false;
+
+    // Re-enable autosave after the form is hydrated.
+    setTimeout(() => {
+        autosaveSuppressed.value = false;
+    }, 0);
 };
 
 onMounted(fillForm);
 watch(() => props.task, fillForm, { deep: true });
 
 const submit = () => {
-    const options = { onSuccess: () => emit('close'), preserveScroll: true };
+    const options = { onSuccess: () => emit('close'), preserveState: true, preserveScroll: true };
     props.task?.id ? form.put(route('tasks.update', props.task.id), options)
         : form.post(route('tasks.store'), options);
 };
+
+watch(() => JSON.stringify(pickFormState()), scheduleAutosave);
 </script>
 
 <template>
@@ -149,6 +239,12 @@ const submit = () => {
             <div class="flex items-center space-x-2">
                 <i class="fas fa-tasks text-[#07b4f6]"></i>
                 <span class="text-xs font-bold uppercase tracking-widest text-gray-500 italic">Dettaglio Attività</span>
+                <span v-if="task && autosaveStatus !== 'idle'"
+                      class="ml-3 text-[10px] font-black uppercase tracking-widest"
+                      :class="autosaveStatus === 'saving' ? 'text-yellow-400' : (autosaveStatus === 'saved' ? 'text-green-400' : 'text-red-400')"
+                >
+                    {{ autosaveStatus === 'saving' ? 'Salvataggio...' : (autosaveStatus === 'saved' ? 'Salvato' : 'Errore salvataggio') }}
+                </span>
             </div>
             <div class="flex items-center space-x-2">
                 <button v-if="task && $page.props.auth.user.permissions.includes('delete tasks')"
@@ -254,7 +350,7 @@ const submit = () => {
 
                     <button v-if="$page.props.auth.user.permissions.includes('create tasks') && !isAddingComment"
                             type="button"
-                            @click.prevent="isAddingComment = true"
+                            @click.prevent="openCommentEditor"
                             class="flex items-center gap-2 text-[#07b4f6] hover:text-white transition-colors text-xs font-bold uppercase">
                         <i class="fas fa-plus"></i> Aggiungi Commento
                     </button>
@@ -263,7 +359,8 @@ const submit = () => {
                 <CommentEditor
                     v-if="isAddingComment"
                     @save="saveComment"
-                    @cancel="isAddingComment = false"
+                    @cancel="cancelCommentEditor"
+                    @dirty-change="onCommentDirtyChange"
                 />
 
                 <div v-if="!task.comments?.length"
@@ -282,10 +379,10 @@ const submit = () => {
         </form>
 
         <div class="absolute bottom-0 left-0 w-full p-6 bg-gray-900 border-t border-gray-800 flex justify-between items-center">
-            <button v-if="$page.props.auth.user.permissions.includes('edit tasks')" @click="submit" :disabled="form.processing"
+            <button v-if="!task && $page.props.auth.user.permissions.includes('edit tasks')" @click="submit" :disabled="form.processing"
                     class="bg-[#07b4f6] hover:bg-[#06a3de] text-white px-8 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-[#07b4f6]/20 transition-all active:scale-95 disabled:opacity-50">
                 <span v-if="form.processing">Salvataggio...</span>
-                <span v-else>{{ task ? 'Aggiorna Attività' : 'Crea Attività' }}</span>
+                <span v-else>Crea Attività</span>
             </button>
         </div>
     </div>
