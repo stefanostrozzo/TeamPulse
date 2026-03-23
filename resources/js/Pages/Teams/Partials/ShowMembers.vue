@@ -3,6 +3,7 @@ import { computed, ref, onMounted } from 'vue';
 import { useForm, usePage, router } from '@inertiajs/vue3';
 import Swal from 'sweetalert2';
 import TextInput from '@/Components/Items/TextInput.vue';
+import PendingInvites from './PendingInvites.vue';
 
 /**
  * Component Props
@@ -259,6 +260,12 @@ onMounted(() => {
                         Salva i nuovi ruoli
                     </button>
                 </div>
+
+                <!-- Pending invitations section -->
+                <PendingInvites
+                    :invitations="team.pending_invitations ?? []"
+                    :can-manage="canManage"
+                />
             </div>
 
             <div v-if="canManage" class="space-y-6">

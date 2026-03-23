@@ -24,7 +24,9 @@ const showCreateTeamModal = ref(false);
 // We read the current tab from the URL to highlight the sidebar icons
 const currentTab = computed(() => page.props.activeTab || 'dashboard');
 
-const selectedProjectIdFromDashboard = ref(null);
+// Project / team / search-driven selection state
+// The initial project can come from the backend (session-persisted)
+const initialProjectId = computed(() => page.props.initialProjectId || null);
 const selectedTeamIdFromDashboard = ref(null);
 const selectedTaskIdFromSearch = ref(null);
 const selectedMemberIdFromSearch = ref(null);
@@ -32,23 +34,20 @@ const selectedMemberIdFromSearch = ref(null);
 const goToSearchResult = (data) => {
     const { type, id, projectId } = data;
 
-    selectedProjectIdFromDashboard.value = null;
     selectedTeamIdFromDashboard.value = null;
     selectedTaskIdFromSearch.value = null;
     selectedMemberIdFromSearch.value = null;
 
     if (type === 'project') {
-        selectedProjectIdFromDashboard.value = id;
-        navigateTo('projects');
+        navigateTo('projects', { initialProjectId: id });
     }
     else if (type === 'team') {
         selectedTeamIdFromDashboard.value = id;
         navigateTo('teams');
     }
     else if (type === 'task') {
-        selectedProjectIdFromDashboard.value = projectId;
         selectedTaskIdFromSearch.value = id;
-        navigateTo('projects');
+        navigateTo('projects', { initialProjectId: projectId });
     }
     else if (type === 'member') {
         selectedMemberIdFromSearch.value = id;
@@ -58,8 +57,7 @@ const goToSearchResult = (data) => {
 };
 
 const goToProjectDetail = (id) => {
-    selectedProjectIdFromDashboard.value = id;
-    navigateTo('projects');
+    navigateTo('projects', { initialProjectId: id });
 };
 
 /**
@@ -75,8 +73,8 @@ const goToTeamDetail = (id) => {
 /**
  * Navigate using Inertia router.
  */
-function navigateTo(tabName) {
-    router.get(route('home'), { tab: tabName }, {
+function navigateTo(tabName, extraParams = {}) {
+    router.get(route('home'), { tab: tabName, ...extraParams }, {
         preserveState: true,
         preserveScroll: true
     });
@@ -180,7 +178,7 @@ onMounted(() => {
                             :projects="page.props.projects"
                             :projectStats="page.props.stats"
                             :current-team-id="page.props.currentTeamId"
-                            :initialProjectId="selectedProjectIdFromDashboard"
+                            :initial-project-id="initialProjectId"
                             :highlight-task-id="selectedTaskIdFromSearch"
                             @clear-task-highlight="selectedTaskIdFromSearch = null"
                         />

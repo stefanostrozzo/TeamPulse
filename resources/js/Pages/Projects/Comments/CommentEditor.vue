@@ -9,7 +9,7 @@ const props = defineProps({
     processing: Boolean
 });
 
-const emit = defineEmits(['save', 'cancel']);
+const emit = defineEmits(['save', 'cancel', 'dirty-change']);
 
 const editor = useEditor({
     content: '',
@@ -27,6 +27,12 @@ const editor = useEditor({
             class: 'focus:outline-none min-h-[120px] text-gray-200 p-4 prose prose-invert max-w-none shadow-inner',
         },
     },
+    onUpdate: ({ editor }) => {
+        const text = editor.getText().trim();
+        const html = editor.getHTML();
+        const hasImage = html.includes('<img');
+        emit('dirty-change', text.length > 0 || hasImage);
+    }
 });
 
 const handleSave = () => {
@@ -35,6 +41,7 @@ const handleSave = () => {
 
     emit('save', html);
     editor.value.commands.clearContent();
+    emit('dirty-change', false);
 };
 
 onBeforeUnmount(() => {

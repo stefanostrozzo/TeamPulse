@@ -25,10 +25,10 @@ Route::middleware(['auth', 'web'])->group(function () {
     //Team routes
     Route::post('/teams/switch/{team}', [TeamController::class, 'switch'])->name('teams.switch');
     Route::delete('/teams/{team}/members/{user}', [TeamController::class, 'removeMember'])->name('teams.members.remove');
-    Route::resource('teams', TeamController::class)->only(['store', 'update', 'destroy']);
-
     Route::post('/teams/invite', [TeamController::class, 'addMember'])->name('teams.invite');
+    Route::delete('/teams/invitations/{invitation}', [TeamController::class, 'cancelInvitation'])->name('teams.invitations.cancel');
     Route::put('/teams/{team}/members/roles', [TeamController::class, 'updateMemberRole'])->name('teams.members.updateRole');
+    Route::resource('teams', TeamController::class)->only(['store', 'update', 'destroy']);
 
     //Project routes
     Route::post('/project', [ProjectController::class, 'store'])->name('project.store');

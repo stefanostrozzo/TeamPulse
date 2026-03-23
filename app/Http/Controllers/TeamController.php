@@ -306,4 +306,26 @@ class TeamController extends Controller
         return redirect()->route('home', ['tab' => 'teams'])
             ->with('status', 'Roles updated successfully!');
     }
+
+    /**
+     * Cancel (revoke) a pending team invitation.
+     *
+     * Deletes the invitation record so the token can no longer be used.
+     * Requires the 'invite members' permission on the invitation's team.
+     */
+    public function cancelInvitation(Invitation $invitation): \Illuminate\Http\RedirectResponse
+    {
+        setPermissionsTeamId($invitation->team_id);
+
+        if (auth()->check()) {
+            auth()->user()->unsetRelation('roles');
+            auth()->user()->unsetRelation('permissions');
+        }
+
+        $this->authorize('invite members');
+
+        $invitation->delete();
+
+        return back()->with('status', 'Invito annullato con successo!');
+    }
 }

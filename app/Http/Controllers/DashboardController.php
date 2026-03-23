@@ -26,10 +26,22 @@ class DashboardController extends Controller
         $activeTab = $request->get('tab', 'dashboard');
         $currentTeamId = $user->current_team_id;
 
+        /*
+        |--------------------------------------------------------------------------
+        | One-shot initial project selection
+        |--------------------------------------------------------------------------
+        | initialProjectId is only honored when explicitly provided in the
+        | current request (e.g. from a dashboard quick link or search result).
+        | It is NOT persisted in session, so once you leave that navigation
+        | context it no longer auto-opens a project.
+        */
+        $initialProjectId = $request->integer('initialProjectId') ?: null;
+
         return Inertia::render('Home', [
             'activeTab' => $activeTab,
             'currentTeamId' => $currentTeamId,
             'teamsCount' => $user->teams()->count(),
+            'initialProjectId' => $initialProjectId,
 
             /*
             |--------------------------------------------------------------------------
@@ -39,9 +51,12 @@ class DashboardController extends Controller
             | for each team, providing granular UI authorization flags.
             */
             'userTeams' => $user->teams()
-                ->with(['users' => function($query) {
-                    $query->select('users.id', 'users.name', 'users.email');
-                }])
+                ->with([
+                    'users' => function ($query): void {
+                        $query->select('users.id', 'users.name', 'users.email');
+                    },
+                    'invitations',
+                ])
                 ->withCount('users')
                 ->get()
                 ->map(function ($team) use ($user) {
@@ -53,6 +68,13 @@ class DashboardController extends Controller
                         'can_delete' => $user->can('delete team') ?? false,
                         'can_manage_team' => $user->can('manage team settings') ?? true,
                         'can_edit_roles' => $user->can('change member roles') ?? false,
+                        'pending_invitations' => $team->invitations->map(fn ($inv) => [
+                            'id'         => $inv->id,
+                            'email'      => $inv->email,
+                            'role'       => $inv->role,
+                            'created_at' => $inv->created_at->toIso8601String(),
+                            'expires_at' => $inv->expires_at->toIso8601String(),
+                        ])->values(),
                     ]);
                 }),
 

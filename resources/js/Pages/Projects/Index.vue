@@ -79,7 +79,6 @@ const openDeleteConfirmation = (project) => {
 };
 
 const handleOpenProject = (project) => {
-    selectedProject.value = project;
     selectedProjectId.value = project.id;
     currentView.value = 'detail';
 };
