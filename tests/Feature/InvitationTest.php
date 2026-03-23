@@ -88,4 +88,49 @@ class InvitationTest extends TestCase
         // Assert the invitation record was deleted after successful use
         $this->assertDatabaseMissing('invitations', ['id' => $invitation->id]);
     }
+
+    /**
+     * Test that an authorized user can cancel (revoke) a pending invitation.
+     */
+    public function test_authorized_user_can_cancel_pending_invitation(): void
+    {
+        // Reset Spatie's permission cache to prevent cross-test contamination
+        app(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
+
+        $owner = User::factory()->create();
+        $team = Team::create(['name' => 'Cancel Test Team']);
+
+        // Setup owner roles/permissions (mirrors the send-invitation test pattern)
+        \Spatie\Permission\Models\Permission::firstOrCreate(['name' => 'invite members']);
+        setPermissionsTeamId($team->id);
+        $owner->teams()->attach($team->id, ['role' => 'owner']);
+        $owner->givePermissionTo('invite members');
+        $owner->update(['current_team_id' => $team->id]);
+
+        // Create a pending invitation
+        $invitation = Invitation::create([
+            'email'      => 'to-cancel@example.com',
+            'team_id'    => $team->id,
+            'role'       => 'member',
+            'token'      => 'cancel-test-token-456',
+            'expires_at' => now()->addDay(),
+        ]);
+
+        // Ensure clean permission state before the request
+        $owner->unsetRelation('roles');
+        $owner->unsetRelation('permissions');
+        app(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
+
+        // Act: cancel the invitation (bypass all middleware to isolate
+        // whether the 403 comes from middleware or controller authorization)
+        $response = $this->withoutMiddleware()
+            ->actingAs($owner)
+            ->delete(route('teams.invitations.cancel', $invitation->id));
+
+        $response->assertRedirect();
+        $response->assertSessionHasNoErrors();
+
+        // Assert the invitation record was removed
+        $this->assertDatabaseMissing('invitations', ['id' => $invitation->id]);
+    }
 }
