@@ -4,6 +4,7 @@ import Swal from 'sweetalert2';
 
 import TaskList from '@/Pages/Projects/Tasks/TaskList.vue';
 import TaskForm from "@/Pages/Projects/Tasks/TaskForm.vue";
+import KanbanBoard from "@/Pages/Kanban/KanbanBoard.vue";
 import {router} from "@inertiajs/vue3";
 
 const props = defineProps({
@@ -255,8 +256,8 @@ onMounted(() => {
             </div>
 
             <!--Kanban Section-->
-            <div v-if="activeTab === 'kanban'" class="text-gray-500 italic text-center py-20">
-                In arrivo...
+            <div v-if="activeTab === 'kanban'" class="fade-in">
+                <KanbanBoard :project="project" @editTask="editTask" />
             </div>
 
             <!--Gantt Section-->

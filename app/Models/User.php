@@ -68,4 +68,13 @@ class User extends Authenticatable
             ->withPivot('role')
             ->withTimestamps();
     }
+
+    /**
+     * Retrieve all Kanban columns of the user
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function kanbanColumns()
+    {
+        return $this->hasMany(KanbanColumn::class);
+    }
 }

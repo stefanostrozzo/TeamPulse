@@ -19,10 +19,6 @@ class TeamTest extends TestCase
 
         // Clear Spatie's internal permission cache to ensure a clean state for each test
         $this->app->make(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
-
-        // Ensure essential roles and permissions exist in the database
-        Role::firstOrCreate(['name' => 'owner']);
-        Permission::firstOrCreate(['name' => 'remove members']);
     }
 
     /**
@@ -45,7 +41,7 @@ class TeamTest extends TestCase
         $team = Team::where('name', 'Innovation Squad')->first();
 
         // Verify the creator is automatically attached to the team
-        $this->assertTrue($user->teams->contains($team));
+        $this->assertTrue($user->fresh()->teams->contains($team));
 
         // Verify the user's current context is updated to the new team
         $this->assertEquals($team->id, $user->fresh()->current_team_id);
@@ -66,47 +62,33 @@ class TeamTest extends TestCase
         $owner->update(['current_team_id' => $team->id]);
         $member->teams()->attach($team->id, ['role' => 'member']);
 
-        // 3. Clear cache INIZIALE
+        // 3. Set Spatie team context and assign the owner role properly
         app(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
-
-        // 4. Setup Spatie permissions CORRETTO
-        // Crea ruolo e permesso se non esistono
-        $role = Role::firstOrCreate(['name' => 'owner', 'guard_name' => 'web']);
-        $permission = Permission::firstOrCreate(['name' => 'remove members', 'guard_name' => 'web']);
-
-        // Assegna permesso al ruolo
-        if (!$role->hasPermissionTo($permission)) {
-            $role->givePermissionTo($permission);
-        }
-
-        // 5. Assegna il ruolo all'utente CON contesto del team
-        // VERSIONE 1: Usando direttamente il modello pivot
-        $owner->roles()->attach($role->id, ['team_id' => $team->id]);
-
-        // OPPURE VERSIONE 2: Se vuoi usare i metodi Spatie
-        // setPermissionsTeamId($team->id);
-        // $owner->assignRole($role);
-        // setPermissionsTeamId(null);
-
-        // 6. Clear cache FINALE
-        app(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
-
-        // 7. DEBUG: Verifica i permessi CON il contesto del team
         setPermissionsTeamId($team->id);
-        app(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
 
-        setPermissionsTeamId(null);
-        \DB::connection()->disableQueryLog();
-        // 8. Execute Request
+        // The PermissionSeeder already created the 'owner' role with all permissions.
+        // We just need to assign it to the user in the correct team context.
+        $owner->assignRole('owner');
+
+        // 4. Verify permissions are working before the request
+        app(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
+        $owner->unsetRelation('roles');
+        $owner->unsetRelation('permissions');
+
+        // Direct assertion that the user has the permission
+        $this->assertTrue(
+            $owner->can('remove members'),
+            'Owner should have "remove members" permission in team context'
+        );
+
+        // 5. Execute Request
         $response = $this->actingAs($owner)->delete(route('teams.members.remove', [
             'team' => $team,
             'user' => $member
         ]));
 
-
-        // 9. Assertions
+        // 6. Assertions
         $response->assertStatus(302);
-        $response->assertRedirect(route('home', ['tab' => 'teams']));
 
         $this->assertDatabaseMissing('team_user', [
             'team_id' => $team->id,

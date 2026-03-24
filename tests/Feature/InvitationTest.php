@@ -121,10 +121,8 @@ class InvitationTest extends TestCase
         $owner->unsetRelation('permissions');
         app(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
 
-        // Act: cancel the invitation (bypass all middleware to isolate
-        // whether the 403 comes from middleware or controller authorization)
-        $response = $this->withoutMiddleware()
-            ->actingAs($owner)
+        // Act: cancel the invitation
+        $response = $this->actingAs($owner)
             ->delete(route('teams.invitations.cancel', $invitation->id));
 
         $response->assertRedirect();

@@ -3,23 +3,24 @@
 namespace Tests;
 
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Foundation\Testing\WithFaker;
-use Illuminate\Foundation\Testing\WithoutMiddleware;
 
 abstract class TestCase extends BaseTestCase
 {
-    use CreatesApplication, RefreshDatabase, WithFaker, WithoutMiddleware;
+    use CreatesApplication, DatabaseTransactions, WithFaker;
 
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         // Seed roles and permissions for testing
         $this->seed(\Database\Seeders\PermissionSeeder::class);
 
-        // Disable CSRF middleware for tests to avoid 419 responses
-        $this->withoutMiddleware(\App\Http\Middleware\VerifyCsrfToken::class);
+        // Disable only CSRF validation — NOT all middleware.
+        // Using WithoutMiddleware trait would also disable SubstituteBindings,
+        // breaking route model binding (Team $team, User $user → raw IDs).
+        $this->withoutMiddleware(\Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class);
     }
 
     /**
@@ -47,7 +48,7 @@ abstract class TestCase extends BaseTestCase
      */
     protected function assertInertiaComponent(string $component): void
     {
-        $this->assertInertia(fn ($page) => $page->component($component));
+        $this->assertInertia(fn($page) => $page->component($component));
     }
 
     /**
