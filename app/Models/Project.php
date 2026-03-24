@@ -95,4 +95,13 @@ class Project extends Model
     {
         return $this->end_date && now()->gt($this->end_date);
     }
+
+    /**
+     * Retrieve all Kanban columns associated with this project.
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function kanbanColumns(): HasMany
+    {
+        return $this->hasMany(KanbanColumn::class);
+    }
 }

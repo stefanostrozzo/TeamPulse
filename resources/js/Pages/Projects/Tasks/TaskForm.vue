@@ -304,7 +304,6 @@ watch(() => JSON.stringify(pickFormState()), scheduleAutosave);
                             optionLabel="label"
                             optionValue="value"
                             filter
-                            required
                             placeholder="Nessun assegnatario"
                             class="col-span-2 custom-prime-ghost" />
                 </div>
@@ -363,7 +362,7 @@ watch(() => JSON.stringify(pickFormState()), scheduleAutosave);
                     @dirty-change="onCommentDirtyChange"
                 />
 
-                <div v-if="!task.comments?.length"
+                <div v-if="!updatedTask.comments?.length"
                      class="text-gray-600 italic text-sm text-center py-6 bg-gray-800/20 rounded-2xl border border-dashed border-gray-800">
                     Ancora nessun commento.
                 </div>

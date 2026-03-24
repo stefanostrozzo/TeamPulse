@@ -3,6 +3,7 @@
 namespace Tests\Unit\Models;
 
 use App\Models\User;
+use App\Models\Team;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
@@ -11,6 +12,18 @@ use Tests\TestCase;
 class UserTest extends TestCase
 {
     use DatabaseTransactions;
+
+    /**
+     * Helper: create a team and set the Spatie permission context.
+     * Required because the project uses Spatie's teams feature.
+     */
+    private function createTeamContext(): Team
+    {
+        $team = Team::create(['name' => 'Test Team']);
+        setPermissionsTeamId($team->id);
+        app(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
+        return $team;
+    }
 
     public function test_user_can_be_created()
     {
@@ -36,8 +49,10 @@ class UserTest extends TestCase
 
     public function test_user_can_assign_role()
     {
+        $this->createTeamContext();
+
         $user = User::factory()->create();
-        $role = Role::findOrCreate('admin');
+        $role = Role::findOrCreate('admin', 'web');
 
         $user->assignRole($role);
 
@@ -46,9 +61,11 @@ class UserTest extends TestCase
 
     public function test_user_can_assign_multiple_roles()
     {
+        $this->createTeamContext();
+
         $user = User::factory()->create();
-        $adminRole = Role::findOrCreate('admin');
-        $editorRole = Role::findOrCreate('editor');
+        $adminRole = Role::findOrCreate('admin', 'web');
+        $editorRole = Role::findOrCreate('editor', 'web');
 
         $user->assignRole([$adminRole, $editorRole]);
 
@@ -58,8 +75,10 @@ class UserTest extends TestCase
 
     public function test_user_can_assign_permission()
     {
+        $this->createTeamContext();
+
         $user = User::factory()->create();
-        $permission = Permission::create(['name' => 'manage-users']);
+        $permission = Permission::firstOrCreate(['name' => 'manage-users', 'guard_name' => 'web']);
 
         $user->givePermissionTo($permission);
 
@@ -76,14 +95,14 @@ class UserTest extends TestCase
         $this->assertTrue(password_verify('plaintext', $user->password));
     }
 
-    // Removed: email lowercase behavior is handled at request validation time, not model-level
-
     public function test_user_can_sync_roles()
     {
+        $this->createTeamContext();
+
         $user = User::factory()->create();
-        $adminRole = Role::findOrCreate('admin');
-        $editorRole = Role::findOrCreate('editor');
-        $userRole = Role::findOrCreate('user');
+        $adminRole = Role::findOrCreate('admin', 'web');
+        $editorRole = Role::findOrCreate('editor', 'web');
+        $userRole = Role::findOrCreate('user', 'web');
 
         $user->assignRole($adminRole);
         $user->syncRoles([$editorRole, $userRole]);
@@ -95,8 +114,10 @@ class UserTest extends TestCase
 
     public function test_user_can_revoke_permission()
     {
+        $this->createTeamContext();
+
         $user = User::factory()->create();
-        $permission = Permission::create(['name' => 'manage-users']);
+        $permission = Permission::firstOrCreate(['name' => 'manage-users', 'guard_name' => 'web']);
 
         $user->givePermissionTo($permission);
         $this->assertTrue($user->hasPermissionTo('manage-users'));

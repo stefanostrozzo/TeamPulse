@@ -3,56 +3,40 @@ import { mount } from '@vue/test-utils'
 import Topbar from '@/Components/Topbar/Topbar.vue'
 
 describe('Topbar', () => {
-  it('renders with default props', () => {
+  it('renders with default elements', () => {
     const wrapper = mount(Topbar)
 
     expect(wrapper.find('.topbar').exists()).toBe(true)
     expect(wrapper.find('.search-input').exists()).toBe(true)
-    expect(wrapper.find('.command-palette-btn').exists()).toBe(true)
-    expect(wrapper.find('.action-btn').exists()).toBe(true)
+    expect(wrapper.find('.search-icon').exists()).toBe(true)
+    expect(wrapper.find('.search-container').exists()).toBe(true)
   })
 
-  it('displays correct placeholder text', () => {
-    const wrapper = mount(Topbar, {
-      props: { placeholder: 'Custom search...' }
-    })
-
-    expect(wrapper.find('.search-input').attributes('placeholder')).toBe('Custom search...')
-  })
-
-  it('shows notification count', () => {
-    const wrapper = mount(Topbar, {
-      props: { notifications: 5 }
-    })
-
-    const badge = wrapper.find('.absolute.-top-1.-right-1')
-    expect(badge.text()).toBe('5')
-    expect(badge.classes()).toContain('bg-red-500')
-  })
-
-  it('hides notification badge when count is 0', () => {
-    const wrapper = mount(Topbar, {
-      props: { notifications: 0 }
-    })
-
-    const badge = wrapper.find('.absolute.-top-1.-right-1')
-    expect(badge.text()).toBe('0')
-  })
-
-  it('emits toggle-notifications event when notification button clicked', async () => {
+  it('displays the default placeholder text', () => {
     const wrapper = mount(Topbar)
 
-    await wrapper.find('.action-btn').trigger('click')
-    expect(wrapper.emitted('toggle-notifications')).toBeTruthy()
-    expect(wrapper.emitted('toggle-notifications')).toHaveLength(1)
+    expect(wrapper.find('.search-input').attributes('placeholder')).toBe('Cerca qualcosa...')
   })
 
-  it('emits command event when command palette button clicked', async () => {
+  it('renders search icon with SVG', () => {
     const wrapper = mount(Topbar)
 
-    await wrapper.find('.command-palette-btn').trigger('click')
-    expect(wrapper.emitted('command')).toBeTruthy()
-    expect(wrapper.emitted('command')).toHaveLength(1)
+    const searchIcon = wrapper.find('.search-icon')
+    expect(searchIcon.exists()).toBe(true)
+    expect(searchIcon.find('svg').exists()).toBe(true)
+  })
+
+  it('applies correct styling to topbar container', () => {
+    const wrapper = mount(Topbar)
+
+    const topbar = wrapper.find('.topbar')
+    expect(topbar.classes()).toContain('bg-gray-800')
+    expect(topbar.classes()).toContain('border-b')
+    expect(topbar.classes()).toContain('border-gray-700')
+    expect(topbar.classes()).toContain('px-6')
+    expect(topbar.classes()).toContain('flex')
+    expect(topbar.classes()).toContain('items-center')
+    expect(topbar.classes()).toContain('justify-between')
   })
 
   it('applies correct styling to search input', () => {
@@ -66,63 +50,71 @@ describe('Topbar', () => {
     expect(searchInput.classes()).toContain('pr-4')
     expect(searchInput.classes()).toContain('py-2')
     expect(searchInput.classes()).toContain('text-sm')
-    expect(searchInput.classes()).toContain('text-gray-100')
+    expect(searchInput.classes()).toContain('text-white')
   })
 
-  it('applies correct styling to command palette button', () => {
-    const wrapper = mount(Topbar)
-
-    const commandBtn = wrapper.find('.command-palette-btn')
-    expect(commandBtn.classes()).toContain('flex')
-    expect(commandBtn.classes()).toContain('items-center')
-    expect(commandBtn.classes()).toContain('gap-2')
-    expect(commandBtn.classes()).toContain('bg-gray-700')
-    expect(commandBtn.classes()).toContain('text-gray-100')
-    expect(commandBtn.classes()).toContain('rounded-xl')
-    expect(commandBtn.classes()).toContain('px-3')
-    expect(commandBtn.classes()).toContain('py-2')
-    expect(commandBtn.classes()).toContain('text-sm')
-  })
-
-  it('applies correct styling to notification button', () => {
-    const wrapper = mount(Topbar)
-
-    const notificationBtn = wrapper.find('.action-btn')
-    expect(notificationBtn.classes()).toContain('w-10')
-    expect(notificationBtn.classes()).toContain('h-10')
-    expect(notificationBtn.classes()).toContain('rounded-xl')
-    expect(notificationBtn.classes()).toContain('bg-gray-700')
-    expect(notificationBtn.classes()).toContain('text-gray-100')
-    expect(notificationBtn.classes()).toContain('hover:bg-[#07b4f6]')
-  })
-
-  it('renders search icon', () => {
+  it('applies correct styling to search icon', () => {
     const wrapper = mount(Topbar)
 
     const searchIcon = wrapper.find('.search-icon')
-    expect(searchIcon.exists()).toBe(true)
-    expect(searchIcon.find('svg').exists()).toBe(true)
+    expect(searchIcon.classes()).toContain('absolute')
+    expect(searchIcon.classes()).toContain('left-4')
+    expect(searchIcon.classes()).toContain('top-1/2')
+    expect(searchIcon.classes()).toContain('-translate-y-1/2')
+    expect(searchIcon.classes()).toContain('text-gray-400')
   })
 
-  it('renders command palette icon', () => {
+  it('has a relative container for search dropdown positioning', () => {
     const wrapper = mount(Topbar)
 
-    const commandIcon = wrapper.find('.command-palette-btn svg')
-    expect(commandIcon.exists()).toBe(true)
+    const container = wrapper.find('.search-container')
+    expect(container.classes()).toContain('relative')
+    expect(container.classes()).toContain('w-full')
+    expect(container.classes()).toContain('max-w-xl')
   })
 
-  it('renders notification bell icon', () => {
+  it('does not show search dropdown by default', () => {
     const wrapper = mount(Topbar)
 
-    const bellIcon = wrapper.find('.action-btn svg')
-    expect(bellIcon.exists()).toBe(true)
+    // The dropdown is conditionally rendered with v-if="isDropdownOpen && results.length > 0"
+    const dropdown = wrapper.find('.absolute.top-full')
+    expect(dropdown.exists()).toBe(false)
   })
 
-  it('applies hover effects correctly', () => {
+  it('binds search input to v-model', async () => {
     const wrapper = mount(Topbar)
 
-    const notificationBtn = wrapper.find('.action-btn')
+    const input = wrapper.find('.search-input')
+    await input.setValue('test query')
+    expect(input.element.value).toBe('test query')
+  })
 
-    expect(notificationBtn.classes()).toContain('hover:bg-[#07b4f6]')
+  it('has the correct input type', () => {
+    const wrapper = mount(Topbar)
+
+    const input = wrapper.find('.search-input')
+    expect(input.attributes('type')).toBe('text')
+  })
+
+  it('applies transition styling to search input', () => {
+    const wrapper = mount(Topbar)
+
+    const searchInput = wrapper.find('.search-input')
+    expect(searchInput.classes()).toContain('transition-all')
+  })
+
+  it('applies border-transparent to search input by default', () => {
+    const wrapper = mount(Topbar)
+
+    const searchInput = wrapper.find('.search-input')
+    expect(searchInput.classes()).toContain('border-transparent')
+  })
+
+  it('applies focus styling classes to search input', () => {
+    const wrapper = mount(Topbar)
+
+    const searchInput = wrapper.find('.search-input')
+    expect(searchInput.classes()).toContain('focus:border-[#07b4f6]')
+    expect(searchInput.classes()).toContain('focus:ring-0')
   })
 })

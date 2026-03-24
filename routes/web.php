@@ -40,6 +40,16 @@ Route::middleware(['auth', 'web'])->group(function () {
     Route::post('tasks/{task}/comments', [CommentController::class, 'store'])->name('comments.store');
     Route::resource('comments', CommentController::class)->only(['update', 'destroy']);
 
+    // Kanban routes
+    Route::get('/projects/{project}/kanban/columns', [\App\Http\Controllers\KanbanController::class, 'index'])->name('kanban.columns.index');
+    Route::post('/projects/{project}/kanban/columns', [\App\Http\Controllers\KanbanController::class, 'storeColumn'])->name('kanban.columns.store');
+    Route::put('/projects/{project}/kanban/columns/{column}', [\App\Http\Controllers\KanbanController::class, 'updateColumn'])->name('kanban.columns.update');
+    Route::delete('/projects/{project}/kanban/columns/{column}', [\App\Http\Controllers\KanbanController::class, 'destroyColumn'])->name('kanban.columns.destroy');
+    Route::put('/projects/{project}/kanban/columns-reorder', [\App\Http\Controllers\KanbanController::class, 'reorderColumns'])->name('kanban.columns.reorder');
+    Route::post('/projects/{project}/kanban/tasks', [\App\Http\Controllers\KanbanController::class, 'addTask'])->name('kanban.tasks.store');
+    Route::put('/projects/{project}/kanban/tasks-reorder', [\App\Http\Controllers\KanbanController::class, 'reorderTasks'])->name('kanban.tasks.reorder');
+    Route::delete('/projects/{project}/kanban/tasks/{kanbanTask}', [\App\Http\Controllers\KanbanController::class, 'removeTask'])->name('kanban.tasks.destroy');
+
     Route::get('/search/global', [SearchController::class, 'global'])->name('search.global');
 });
 

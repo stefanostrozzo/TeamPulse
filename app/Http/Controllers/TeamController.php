@@ -57,10 +57,13 @@ class TeamController extends Controller
             // 1. Create the team
             $team = Team::create($validated);
 
-            // 3. Attach the current user as the Owner in the pivot table
+            // 2. Attach the current user as the Owner in the pivot table
             $request->user()->teams()->attach($team->id, ['role' => 'owner']);
 
-            // 2. Register the permissions for Spatie
+            // 3. Set the new team as the user's active team
+            $request->user()->update(['current_team_id' => $team->id]);
+
+            // 4. Register the permissions for Spatie
             setPermissionsTeamId($team->id);
             $request->user()->assignRole('owner');
 
