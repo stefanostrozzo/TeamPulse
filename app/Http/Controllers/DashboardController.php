@@ -42,6 +42,7 @@ class DashboardController extends Controller
             'currentTeamId' => $currentTeamId,
             'teamsCount' => $user->teams()->count(),
             'initialProjectId' => $initialProjectId,
+            'unreadMessagesCount' => app(\App\Services\MessageService::class)->getUnreadCountForUser($user),
 
             /*
             |--------------------------------------------------------------------------

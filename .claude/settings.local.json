@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(php artisan *)",
+      "Bash(where php *)",
+      "Bash(php -v)",
+      "Bash(C:\\\\Users\\\\stroz\\\\.config\\\\herd\\\\bin\\\\php.bat *)",
+      "PowerShell(& \"C:\\\\Users\\\\stroz\\\\.config\\\\herd\\\\bin\\\\php.bat\" -v 2>&1)",
+      "Bash(C:/Users/stroz/.config/herd/bin/php.bat *)",
+      "Bash(\"C:/Users/stroz/.config/herd/bin/php.bat\" artisan *)",
+      "Bash(npm run *)"
+    ]
+  }
+}

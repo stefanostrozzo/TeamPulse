@@ -3,16 +3,19 @@
 namespace Tests;
 
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
-use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 
 abstract class TestCase extends BaseTestCase
 {
-    use CreatesApplication, DatabaseTransactions, WithFaker;
+    use CreatesApplication, RefreshDatabase, WithFaker;
 
     protected function setUp(): void
     {
         parent::setUp();
+
+        // Override cached broadcasting config so tests never attempt a real Reverb connection.
+        config(['broadcasting.default' => 'null']);
 
         // Seed roles and permissions for testing
         $this->seed(\Database\Seeders\PermissionSeeder::class);

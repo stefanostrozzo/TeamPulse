@@ -7,6 +7,8 @@ import { createApp, h } from 'vue';
 import { ZiggyVue } from 'ziggy-js';
 import PrimeVue from 'primevue/config';
 import Aura from '@primevue/themes/aura';
+import ToastService from 'primevue/toastservice';
+import { createPinia } from 'pinia';
 
 const appName = import.meta.env.VITE_APP_NAME || 'TeamPulse';
 
@@ -18,9 +20,12 @@ createInertiaApp({
             import.meta.glob('./Pages/**/*.vue'),
         ),
     setup({ el, App, props, plugin }) {
+        const pinia = createPinia();
         return createApp({ render: () => h(App, props) })
             .use(ZiggyVue)
             .use(plugin)
+            .use(pinia)
+            .use(ToastService)
             .use(PrimeVue, {
                 theme: {
                     preset: Aura,
