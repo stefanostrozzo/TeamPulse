@@ -103,13 +103,13 @@ const barSeries = [{
 
 <template>
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div class="bg-gray-900 rounded-2xl border border-gray-800 p-6 min-h-100 flex flex-col">
+        <div class="bg-gray-800 rounded-2xl border border-gray-700 p-6 min-h-100 flex flex-col">
             <h3 class="text-lg font-semibold text-white mb-6">Stato delle mie attività</h3>
             <div class="grow">
                 <VueApexCharts width="100%" height="100%" :options="pieOptions" :series="myTasksStats.series" />
             </div>
         </div>
-        <div class="bg-gray-900 rounded-2xl border border-gray-800 p-6 min-h-100 flex flex-col">
+        <div class="bg-gray-800 rounded-2xl border border-gray-700 p-6 min-h-100 flex flex-col">
             <h3 class="text-lg font-semibold text-white mb-6">Attività per priorità</h3>
             <div class="grow">
                 <VueApexCharts width="100%" height="100%" :options="barOptions" :series="barSeries" />

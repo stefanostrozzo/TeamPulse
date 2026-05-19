@@ -51,6 +51,16 @@ Route::middleware(['auth', 'web'])->group(function () {
     Route::delete('/projects/{project}/kanban/tasks/{kanbanTask}', [\App\Http\Controllers\KanbanController::class, 'removeTask'])->name('kanban.tasks.destroy');
 
     Route::get('/search/global', [SearchController::class, 'global'])->name('search.global');
+
+    // Messaging routes
+    Route::prefix('messaging')->group(function () {
+        Route::get('/conversations', [\App\Http\Controllers\ConversationController::class, 'index'])->name('messaging.conversations.index');
+        Route::post('/conversations', [\App\Http\Controllers\ConversationController::class, 'store'])->name('messaging.conversations.store');
+        Route::get('/conversations/{conversation}', [\App\Http\Controllers\ConversationController::class, 'show'])->name('messaging.conversations.show');
+        Route::post('/conversations/{conversation}/read', [\App\Http\Controllers\ConversationController::class, 'markAsRead'])->name('messaging.conversations.read');
+        Route::post('/conversations/{conversation}/messages', [\App\Http\Controllers\MessageController::class, 'store'])->name('messaging.messages.store');
+        Route::get('/contacts/search', [\App\Http\Controllers\ContactController::class, 'search'])->name('messaging.contacts.search');
+    });
 });
 
 //Accept invitation route

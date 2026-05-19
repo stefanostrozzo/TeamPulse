@@ -77,4 +77,22 @@ class User extends Authenticatable
     {
         return $this->hasMany(KanbanColumn::class);
     }
+
+    /**
+     * The conversations this user is participating in.
+     */
+    public function conversations(): BelongsToMany
+    {
+        return $this->belongsToMany(Conversation::class, 'conversation_participants')
+            ->withPivot('last_read_at')
+            ->withTimestamps();
+    }
+
+    /**
+     * The messages sent by this user.
+     */
+    public function sentMessages(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Message::class, 'sender_id');
+    }
 }

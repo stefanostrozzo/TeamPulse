@@ -53,7 +53,7 @@ const submit = () => {
                 <p class="text-gray-400 mt-2 text-sm">Registrati e inizia a gestire i tuoi progetti</p>
             </div>
 
-            <div class="bg-gray-900/40 border border-gray-800 backdrop-blur-xl p-8 rounded-md shadow-2xl">
+            <div class="bg-gray-900/40 border border-gray-800 backdrop-blur-xl p-8 rounded-3xl shadow-2xl">
                 <form @submit.prevent="submit" class="space-y-5">
                     <input type="hidden" v-model="form.token">
                     <div>

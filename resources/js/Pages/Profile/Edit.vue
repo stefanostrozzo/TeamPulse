@@ -13,7 +13,7 @@ import DeleteUserForm from '@/Pages/Profile/Components/DeleteUserForm.vue';
         </div>
 
         <div class="grid grid-cols-1 gap-8">
-            <div class="bg-gray-900/50 border border-gray-800 p-8 rounded-2xl shadow-sm backdrop-blur-sm">
+            <div class="bg-gray-800 border border-gray-800 p-8 rounded-2xl shadow-sm backdrop-blur-sm">
                 <UpdateProfileInformationForm
                     :must-verify-email="mustVerifyEmail"
                     :status="status"
@@ -21,11 +21,11 @@ import DeleteUserForm from '@/Pages/Profile/Components/DeleteUserForm.vue';
                 />
             </div>
 
-            <div class="bg-gray-900/50 border border-gray-800 p-8 rounded-2xl shadow-sm backdrop-blur-sm">
+            <div class="bg-gray-800 border border-gray-800 p-8 rounded-2xl shadow-sm backdrop-blur-sm">
                 <UpdatePasswordForm class="max-w-2xl" />
             </div>
 
-            <div class="bg-red-900/5 border border-red-900/20 p-8 rounded-2xl shadow-sm">
+            <div class="bg-gray-800 border border-red-500/20 p-8 rounded-2xl shadow-sm">
                 <DeleteUserForm class="max-w-2xl" />
             </div>
         </div>

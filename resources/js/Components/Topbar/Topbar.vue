@@ -1,8 +1,10 @@
 <script setup>
 import { ref, watch } from 'vue';
 import axios from 'axios';
+import { useMessagingStore } from '@/stores/messagingStore';
 
-const emit = defineEmits(['toggle-notifications', 'search-navigation']);
+const emit = defineEmits(['toggle-notifications', 'search-navigation', 'open-messages']);
+const store = useMessagingStore();
 
 const searchQuery = ref(null);
 const results = ref([]);
@@ -55,7 +57,7 @@ watch(searchQuery, (val) => {
 </script>
 
 <template>
-    <div class="topbar bg-gray-800 border-b border-gray-700 px-6 pt-5 pb-3 flex items-center justify-between relative">
+    <div class="topbar bg-gray-800 border-b border-gray-700 px-6 pt-5 pb-3 flex items-center justify-between relative gap-4">
         <div class="search-container relative w-full max-w-xl">
             <span class="search-icon absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
@@ -84,6 +86,16 @@ watch(searchQuery, (val) => {
                     </span>
                 </div>
             </div>
+        </div>
+
+        <div class="flex items-center gap-4">
+            <!-- Messages Icon -->
+            <button @click="$emit('open-messages')" class="relative text-gray-400 hover:text-white transition">
+                <i class="fas fa-comment-dots text-xl"></i>
+                <span v-if="store.unreadCount > 0" class="absolute -top-1.5 -right-1.5 bg-[#07b4f6] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full border border-gray-800">
+                    {{ store.unreadCount }}
+                </span>
+            </button>
         </div>
     </div>
 </template>

@@ -39,7 +39,7 @@ const taskTree = computed(() => {
 </script>
 
 <template>
-    <div class="bg-gray-900/50 rounded-xl border border-gray-800 overflow-hidden">
+    <div class="bg-gray-800/50 rounded-xl border border-gray-700 overflow-hidden">
         <div class="flex items-center justify-end gap-2 px-4 py-3 border-b border-gray-800 bg-gray-950/30">
             <button
                 type="button"

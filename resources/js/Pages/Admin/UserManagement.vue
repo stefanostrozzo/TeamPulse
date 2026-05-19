@@ -1,35 +1,35 @@
 <template>
-  <div class="max-w-7xl mx-auto py-10 px-4 dark bg-gray-900 min-h-screen">
+  <div class="max-w-7xl mx-auto py-10 px-4 bg-gray-950 min-h-screen">
     <h1 class="text-3xl font-bold mb-8 text-gray-100">Gestione Utenti, Ruoli e Permessi</h1>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
       <!-- Creazione nuovo utente -->
-      <div class="bg-gray-800 rounded-lg shadow p-6">
+      <div class="bg-gray-800 rounded-xl shadow p-6">
         <h2 class="text-xl font-semibold mb-4 text-gray-100">Crea nuovo utente</h2>
         <form @submit.prevent="createUser" class="space-y-4">
-          <input v-model="newUser.name" placeholder="Nome" required class="w-full rounded border-gray-700 bg-gray-900 text-white" />
-          <input v-model="newUser.email" placeholder="Email" required class="w-full rounded border-gray-700 bg-gray-900 text-white" />
-          <input v-model="newUser.password" type="password" placeholder="Password" required class="w-full rounded border-gray-700 bg-gray-900 text-white" />
-          <select v-model="newUser.role" required class="w-full rounded border-gray-700 bg-gray-900 text-white">
+          <input v-model="newUser.name" placeholder="Nome" required class="w-full rounded-xl border border-gray-700 bg-gray-900 text-white px-3 py-2 focus:border-[#07b4f6] focus:ring-1 focus:ring-[#07b4f6] outline-none" />
+          <input v-model="newUser.email" placeholder="Email" required class="w-full rounded-xl border border-gray-700 bg-gray-900 text-white px-3 py-2 focus:border-[#07b4f6] focus:ring-1 focus:ring-[#07b4f6] outline-none" />
+          <input v-model="newUser.password" type="password" placeholder="Password" required class="w-full rounded-xl border border-gray-700 bg-gray-900 text-white px-3 py-2 focus:border-[#07b4f6] focus:ring-1 focus:ring-[#07b4f6] outline-none" />
+          <select v-model="newUser.role" required class="w-full rounded-xl border border-gray-700 bg-gray-900 text-white px-3 py-2 focus:border-[#07b4f6] focus:ring-1 focus:ring-[#07b4f6] outline-none">
             <option value="" disabled>Seleziona ruolo</option>
             <option v-for="role in roles" :key="role.id" :value="role.name">{{ role.name }}</option>
           </select>
-          <button type="submit" class="w-full bg-blue-700 hover:bg-blue-800 text-white font-semibold py-2 px-4 rounded transition">Crea utente</button>
+          <button type="submit" class="w-full bg-[#4f46e5] hover:bg-[#4338ca] text-white font-semibold py-2 px-4 rounded transition">Crea utente</button>
         </form>
       </div>
 
       <!-- Creazione nuovo ruolo -->
-      <div class="bg-gray-800 rounded-lg shadow p-6">
+      <div class="bg-gray-800 rounded-xl shadow p-6">
         <h2 class="text-xl font-semibold mb-4 text-gray-100">Crea nuovo ruolo</h2>
         <form @submit.prevent="createRole" class="flex gap-2">
-          <input v-model="newRole" placeholder="Nome ruolo" required class="flex-1 rounded border-gray-700 bg-gray-900 text-white" />
-          <button type="submit" class="bg-green-700 hover:bg-green-800 text-white font-semibold py-2 px-4 rounded transition">Crea ruolo</button>
+          <input v-model="newRole" placeholder="Nome ruolo" required class="flex-1 rounded-xl border border-gray-700 bg-gray-900 text-white px-3 py-2 focus:border-[#07b4f6] focus:ring-1 focus:ring-[#07b4f6] outline-none" />
+          <button type="submit" class="bg-[#07b4f6] hover:bg-[#069acc] text-white font-semibold py-2 px-4 rounded transition">Crea ruolo</button>
         </form>
       </div>
     </div>
 
     <!-- Tabella utenti -->
-    <div class="bg-gray-800 rounded-lg shadow p-6">
+    <div class="bg-gray-800 rounded-xl shadow p-6">
       <h2 class="text-xl font-semibold mb-4 text-gray-100">Utenti</h2>
       <div class="overflow-x-auto">
         <table class="min-w-full divide-y divide-gray-700">
@@ -47,7 +47,7 @@
               <td class="px-4 py-2 font-medium text-gray-100">{{ user.name }}</td>
               <td class="px-4 py-2 text-gray-300">{{ user.email }}</td>
               <td class="px-4 py-2">
-                <select v-model="user.role" class="rounded border-gray-700 bg-gray-900 text-white">
+                <select v-model="user.role" class="rounded-xl border border-gray-700 bg-gray-900 text-white px-3 py-1.5 focus:border-[#07b4f6] focus:ring-1 focus:ring-[#07b4f6] outline-none">
                   <option v-for="role in roles" :key="role.id" :value="role.name">{{ role.name }}</option>
                 </select>
               </td>
@@ -60,7 +60,7 @@
                 </div>
               </td>
               <td class="px-4 py-2">
-                <button @click="saveUser(user)" class="bg-blue-700 hover:bg-blue-800 text-white px-3 py-1 rounded text-xs font-semibold transition">Salva modifiche</button>
+                <button @click="saveUser(user)" class="bg-[#4f46e5] hover:bg-[#4338ca] text-white px-3 py-1 rounded text-xs font-semibold transition">Salva modifiche</button>
               </td>
             </tr>
           </tbody>
