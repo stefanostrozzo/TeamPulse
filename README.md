@@ -173,7 +173,7 @@ This is a personal project in MVP phase. Feedback, ideas, and contributions are 
 
 ## 📄 License
 
-This project is licensed under the [MIT License](LICENSE)[cite: 1].
+This project is licensed under the [GNU License](LICENSE).
 
 ---
 
