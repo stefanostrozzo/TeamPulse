@@ -189,4 +189,22 @@ class MessageTest extends TestCase
         $pivot = $conversation->participants()->where('users.id', $user1->id)->first()->pivot;
         $this->assertNotNull($pivot->last_read_at);
     }
+
+    public function test_whitespace_only_message_body_is_rejected(): void
+    {
+        $user = User::factory()->create();
+        $other = User::factory()->create();
+        $conversation = Conversation::create([
+            'is_group' => false,
+            'created_by' => $user->id,
+        ]);
+        $conversation->participants()->attach([$user->id, $other->id]);
+
+        $response = $this->actingAs($user)->postJson(route('messaging.messages.store', $conversation), [
+            'body' => '   ',
+        ]);
+
+        $response->assertUnprocessable();
+        $response->assertJsonValidationErrors(['body']);
+    }
 }

@@ -54,11 +54,13 @@ class MessageService
      */
     public function getUnreadCountForUser(User $user): int
     {
-        return $user->conversations()
-            ->where(function ($q) {
-                $q->whereNull('conversation_participants.last_read_at')
-                  ->orWhereColumn('conversations.last_message_at', '>', 'conversation_participants.last_read_at');
-            })
-            ->count();
+        return once(function () use ($user) {
+            return $user->conversations()
+                ->where(function ($q) {
+                    $q->whereNull('conversation_participants.last_read_at')
+                      ->orWhereColumn('conversations.last_message_at', '>', 'conversation_participants.last_read_at');
+                })
+                ->count();
+        });
     }
 }
