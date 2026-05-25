@@ -11,6 +11,8 @@ export const useMessagingStore = defineStore('messaging', () => {
     const isLoadingConversations = ref(false);
     const isLoadingMessages = ref(false);
     const isInitialized = ref(false);
+    const currentPage = ref(1);
+    const hasMoreMessages = ref(false);
 
     // Track latest message arrival for global Toast notification
     const newIncomingMessage = ref(null);
@@ -58,11 +60,15 @@ export const useMessagingStore = defineStore('messaging', () => {
     }
 
     async function fetchMessages(conversationId) {
+        currentPage.value = 1;
+        hasMoreMessages.value = false;
         isLoadingMessages.value = true;
         try {
             const { data } = await axios.get(route('messaging.conversations.show', conversationId));
             // Pagination returns newest first; reverse for chronological display
             messages.value = data.messages.data.reverse();
+            currentPage.value = data.messages.current_page;
+            hasMoreMessages.value = data.messages.current_page < data.messages.last_page;
             // Merge fresh participant data (pivot.last_read_at may have changed)
             const idx = conversations.value.findIndex(c => c.id === conversationId);
             if (idx !== -1) {
@@ -272,13 +278,16 @@ export const useMessagingStore = defineStore('messaging', () => {
         let count = 0;
         for (const c of conversations.value) {
             const me = c.participants.find(p => p.id === myId);
-            if (me && c.latest_message) {
-                const messageTime = new Date(c.latest_message.created_at).getTime();
-                const readTime = me.pivot.last_read_at ? new Date(me.pivot.last_read_at).getTime() : 0;
-                if (messageTime > readTime) {
-                    count++;
-                }
-            }
+            if (!me) continue;
+
+            const messageTime = c.latest_message
+                ? new Date(c.latest_message.created_at).getTime()
+                : c.last_message_at
+                    ? new Date(c.last_message_at).getTime()
+                    : 0;
+            const readTime = me.pivot?.last_read_at ? new Date(me.pivot.last_read_at).getTime() : 0;
+
+            if (messageTime > readTime) count++;
         }
         unreadCount.value = count;
     }
@@ -316,6 +325,17 @@ export const useMessagingStore = defineStore('messaging', () => {
         }
     }
 
+    async function fetchOlderMessages(conversationId) {
+        const nextPage = currentPage.value + 1;
+        const response = await axios.get(route('conversations.messages', conversationId), {
+            params: { page: nextPage }
+        });
+        const data = response.data;
+        messages.value = [...data.data.reverse(), ...messages.value];
+        currentPage.value = data.current_page;
+        hasMoreMessages.value = data.current_page < data.last_page;
+    }
+
     return {
         conversations,
         activeConversationId,
@@ -325,6 +345,8 @@ export const useMessagingStore = defineStore('messaging', () => {
         isLoadingMessages,
         isInitialized,
         activeConversation,
+        currentPage,
+        hasMoreMessages,
         initialize,
         fetchConversations,
         fetchMessages,
@@ -337,5 +359,6 @@ export const useMessagingStore = defineStore('messaging', () => {
         newIncomingMessage,
         cleanup,
         refreshConversations,
+        fetchOlderMessages,
     };
 });

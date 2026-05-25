@@ -32,7 +32,7 @@
 - **Teams** — Invite management, member roles, and pending invites.
 - **Real-time Messaging** — Instant team chat with public and private channels[cite: 1].
 - **Task Comments** — Dedicated comment section per task with instant notifications[cite: 1].
-- **Real-time Notifications** — Live updates on task changes and messages via WebSockets (Laravel Echo + Pusher)[cite: 1].
+- **Real-time Notifications** — Live updates on task changes and messages via WebSockets (Laravel Echo + Laravel Reverb (self-hosted WebSocket server))[cite: 1].
 
 ### 📊 Dashboard
 - Configurable widgets for project progress, workload, and recent activity[cite: 1].
@@ -70,7 +70,7 @@
 | Backend | Laravel 12 (PHP 8.x) |
 | Frontend | Vue 3 (Composition API) + Inertia.js + Pinia |
 | UI & Styling | Tailwind CSS 4 + PrimeVue 4 |
-| Real-time | Laravel Echo + Pusher[cite: 1] |
+| Real-time | Laravel Echo + Laravel Reverb (self-hosted WebSocket server)[cite: 1] |
 | Database | MySQL / PostgreSQL[cite: 1] |
 
 ---
@@ -97,7 +97,6 @@
 - Composer[cite: 1]
 - Node.js >= 18.x & npm[cite: 1]
 - MySQL or PostgreSQL[cite: 1]
-- A [Pusher](https://pusher.com/) account (for real-time features)[cite: 1]
 
 ### Installation
 
@@ -116,7 +115,7 @@ npm install[cite: 1]
 cp .env.example .env[cite: 1]
 php artisan key:generate[cite: 1]
 
-# 5. Configure your database and Pusher credentials in .env[cite: 1]
+# 5. Configure your database in .env[cite: 1]
 
 # 6. Run migrations
 php artisan migrate[cite: 1]

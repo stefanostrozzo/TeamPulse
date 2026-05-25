@@ -18,15 +18,20 @@
                 <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
                 <p class="text-sm">Caricamento in corso...</p>
             </div>
-            
-            <div v-else-if="conversations.length === 0" class="text-center py-10 text-gray-500 px-4">
-                <p class="text-sm">Nessuna conversazione trovata. Cerca un collega per iniziare.</p>
+
+            <div
+                v-if="conversations.length === 0 && !isLoadingConversations"
+                class="flex flex-col items-center justify-center h-40 text-gray-500 text-sm"
+            >
+                <i class="fas fa-comments text-2xl mb-2"></i>
+                <p>Nessuna conversazione.</p>
+                <p class="text-xs">Inizia una chat!</p>
             </div>
 
-            <ConversationItem 
-                v-else
-                v-for="convo in conversations" 
-                :key="convo.id" 
+            <ConversationItem
+                v-for="convo in conversations"
+                v-if="conversations.length > 0"
+                :key="convo.id"
                 :conversation="convo"
                 :active="activeConversationId === convo.id"
                 @select="selectConversation" />

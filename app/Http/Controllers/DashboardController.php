@@ -143,13 +143,13 @@ class DashboardController extends Controller
                 : [],
 
             'stats' => ($activeTab === 'projects' && $currentTeamId) ? [
-                'total'     => Project::where('team_id', $currentTeamId)->count() ?? 0,
-                'active'    => Project::where('team_id', $currentTeamId)->where('status', 'active')->count() ?? 0,
-                'completed' => Project::where('team_id', $currentTeamId)->where('status', 'completed')->count() ?? 0,
+                'total'     => Project::where('team_id', $currentTeamId)->count(),
+                'active'    => Project::where('team_id', $currentTeamId)->where('status', 'active')->count(),
+                'completed' => Project::where('team_id', $currentTeamId)->where('status', 'completed')->count(),
                 'overdue'   => Project::where('team_id', $currentTeamId)
                         ->where('status', 'active')
                         ->where('end_date', '<', now())
-                        ->count() ?? 0,
+                        ->count(),
             ] : null,
 
             'mustVerifyEmail' => $user->hasVerifiedEmail(),

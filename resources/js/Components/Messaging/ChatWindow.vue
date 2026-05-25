@@ -9,9 +9,26 @@
             </div>
             <div class="flex-1 min-w-0">
                 <h3 class="font-bold text-white text-base truncate">{{ displayName }}</h3>
-                <p class="text-xs text-[#07b4f6] font-medium" v-if="activeConversation?.is_group">
-                    {{ activeConversation.participants.length }} membri
-                </p>
+                <div class="relative" v-if="activeConversation?.is_group">
+                    <span
+                        class="text-xs text-gray-400 cursor-pointer hover:text-white transition-colors"
+                        @click="showParticipants = !showParticipants"
+                    >
+                        {{ activeConversation.participants.length }} membri
+                    </span>
+                    <div
+                        v-if="showParticipants"
+                        class="absolute top-full left-0 mt-1 bg-gray-800 border border-gray-700 rounded-lg shadow-xl z-50 p-2 min-w-40"
+                    >
+                        <div
+                            v-for="p in activeConversation.participants"
+                            :key="p.id"
+                            class="text-sm text-gray-200 py-1 px-2 hover:bg-gray-700 rounded"
+                        >
+                            {{ p.name }}
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -20,13 +37,22 @@
             <div v-if="isLoadingMessages" class="flex justify-center p-4">
                 <i class="fas fa-spinner fa-spin text-gray-500"></i>
             </div>
-            
+
             <template v-else>
+                <div v-if="store.hasMoreMessages" class="flex justify-center py-2">
+                    <button
+                        @click="store.fetchOlderMessages(activeConversationId)"
+                        class="text-xs text-gray-400 hover:text-white bg-gray-700 hover:bg-gray-600 px-4 py-1.5 rounded-full transition-colors"
+                    >
+                        Carica messaggi precedenti
+                    </button>
+                </div>
+
                 <div v-if="messages.length === 0" class="text-center text-gray-500 mt-10">
                     <p class="text-sm">Inizia la conversazione...</p>
                 </div>
-                
-                <template v-for="(msg, index) in messages" :key="msg.id">
+
+                <template v-for="msg in messages" :key="msg.id">
                     
                     <MessageBubble 
                         :message="msg" 
@@ -66,6 +92,7 @@ import { ref, watch, computed, nextTick } from 'vue';
 import { useMessagingStore } from '@/stores/messagingStore';
 import { storeToRefs } from 'pinia';
 import MessageBubble from './MessageBubble.vue';
+import { useToast } from 'primevue/usetoast';
 
 const props = defineProps({
     conversationId: { type: Number, required: true }
@@ -73,18 +100,20 @@ const props = defineProps({
 
 const store = useMessagingStore();
 const { activeConversation, messages, isLoadingMessages } = storeToRefs(store);
+const toast = useToast();
 
 const newMessage = ref('');
 const isSending = ref(false);
 const messagesContainer = ref(null);
 
 const myId = computed(() => window.Laravel?.user?.id);
+const showParticipants = ref(false);
 
 // Load messages when conversation changes
 watch(() => props.conversationId, async (newId) => {
     if (newId) {
         await store.fetchMessages(newId);
-        scrollToBottom(true);
+        scrollToBottom();
     }
 }, { immediate: true });
 
@@ -100,12 +129,7 @@ const displayName = computed(() => {
     return other ? other.name : 'Unknown User';
 });
 
-const myPivotInfo = computed(() => {
-    if (!activeConversation.value || !myId.value) return null;
-    return activeConversation.value.participants.find(p => p.id === myId.value)?.pivot;
-});
-
-const scrollToBottom = async (checkUnread = false) => {
+const scrollToBottom = async () => {
     await nextTick();
     if (!messagesContainer.value) return;
 
@@ -129,6 +153,12 @@ const submitMessage = async () => {
         newMessage.value = '';
     } catch (e) {
         console.error('Send error:', e);
+        toast.add({
+            severity: 'error',
+            summary: 'Errore',
+            detail: 'Impossibile inviare il messaggio. Riprova.',
+            life: 4000
+        });
     } finally {
         isSending.value = false;
         await nextTick();
