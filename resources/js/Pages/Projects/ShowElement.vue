@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, watch } from 'vue';
 import Swal from 'sweetalert2';
 
 import TaskList from '@/Pages/Projects/Tasks/TaskList.vue';
@@ -144,17 +144,19 @@ const PROJECT_PRIORITIES = {
     'high': { label: 'Alta', color: 'text-red-400' }
 };
 
-onMounted(() => {
+const handleHighlight = () => {
     if (props.highlightTaskId && props.tasks) {
         const taskToOpen = props.tasks.find(t => t.id === props.highlightTaskId);
 
         if (taskToOpen) {
             editTask(taskToOpen);
-
             emit('clear-highlight');
         }
     }
-});
+};
+
+onMounted(handleHighlight);
+watch(() => props.highlightTaskId, handleHighlight);
 </script>
 
 <template>
@@ -248,6 +250,7 @@ onMounted(() => {
                         v-if="isModalOpen"
                         :project="props.project"
                         :task="selectedTask"
+                        :is-manager="$page.props.isManager ?? false"
                         @close="attemptCloseTask"
                         @confirmDelete="openDeleteConfirmation"
                         @dirty-change="onTaskDirtyChange"

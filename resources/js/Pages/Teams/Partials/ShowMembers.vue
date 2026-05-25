@@ -72,7 +72,7 @@ const stageRoleChange = (userId, newRole) => {
 const saveRoleChanges = () => {
     const updates = roleUpdates.value;
 
-    router.put(route('teams.members.updateRole', { team: props.team.id }),
+    router.put(route('Plteams.members.updateRole', { team: props.team.id }),
         {
             updates: updates
         },

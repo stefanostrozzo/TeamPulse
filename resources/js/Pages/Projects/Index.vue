@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import Swal from 'sweetalert2';
 import { router } from '@inertiajs/vue3';
 
@@ -88,12 +88,15 @@ const backToGrid = () => {
     selectedProject.value = null;
 };
 
-onMounted(() => {
+const syncFromProps = () => {
     if (props.initialProjectId) {
         selectedProjectId.value = props.initialProjectId;
         currentView.value = 'detail';
     }
-});
+};
+
+onMounted(syncFromProps);
+watch(() => props.initialProjectId, syncFromProps);
 </script>
 
 <template>
