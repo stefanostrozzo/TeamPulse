@@ -140,13 +140,21 @@ const saveRoleChanges = () => {
  */
 watch(() => page.props.errors, (errors) => {
     if (!errors) return;
-    const msg = errors.role || errors.error;
-    if (msg) {
+
+    if (errors.role) {
         roleUpdates.value = {};
         hasRoleChanges.value = false;
         Swal.fire({
-            title: 'Errore',
-            text: msg,
+            title: 'Modifica ruolo non consentita',
+            text: errors.role,
+            icon: 'error',
+            background: '#1f2937',
+            color: '#ffffff',
+        });
+    } else if (errors.error) {
+        Swal.fire({
+            title: 'Rimozione non consentita',
+            text: errors.error,
             icon: 'error',
             background: '#1f2937',
             color: '#ffffff',
@@ -275,8 +283,11 @@ onMounted(() => {
 
                     <div class="flex items-center gap-4">
                         <template v-if="canManage">
-                            <template v-if="isOwner && user.id === $page.props.auth.user.id">
-                                <span class="text-[10px] px-2 py-1 rounded bg-gray-900 text-[#07b4f6] uppercase font-bold border border-gray-700" title="Trasferisci la proprietà prima di cambiare il tuo ruolo">
+                            <template v-if="user.pivot?.role === 'owner'">
+                                <span
+                                    class="text-[10px] px-2 py-1 rounded bg-gray-900 text-[#07b4f6] uppercase font-bold border border-gray-700"
+                                    :title="isOwner ? 'Trasferisci la proprietà prima di cambiare il tuo ruolo' : 'Il ruolo del proprietario non è modificabile'"
+                                >
                                     {{ roleLabels[user.pivot?.role] }}
                                 </span>
                             </template>
