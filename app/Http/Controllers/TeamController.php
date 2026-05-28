@@ -130,7 +130,7 @@ class TeamController extends Controller
         // 2. Validation (Note: we removed 'exists:users' because the user might be new)
         $validated = $request->validate([
             'email' => 'required|email',
-            'role'  => 'required|string|in:owner,manager,member,guest',
+            'role'  => 'required|string|in:manager,member,guest',
         ]);
 
         // 3. Prevent duplicate active invitations for the same team
@@ -263,30 +263,76 @@ class TeamController extends Controller
 
         $updates = $validated['updates'];
 
-        // 3. Safety Check: Calculate how many admins exist BEFORE changes
-        $admins = $team->users->filter(fn($u) => $u->can('change member roles'));
-        $adminIds = $admins->pluck('id')->toArray();
+        // Guard: The owner cannot demote themselves directly; they must transfer ownership first
+        $currentUserPivotRole = $team->users()->where('user_id', auth()->id())->value('role');
+        if ($currentUserPivotRole === 'owner' && isset($updates[auth()->id()]) && $updates[auth()->id()] !== 'owner') {
+            return redirect()->route('home', ['tab' => 'teams'])->withErrors([
+                'role' => 'Il proprietario non può cambiare il proprio ruolo. Trasferisci prima la proprietà a un altro membro.'
+            ]);
+        }
 
-        // 4. Check if we are declassing all existing admins
-        $willStillHaveAdmin = false;
+        // Guard: Only the current team owner can transfer ownership
+        if (in_array('owner', $updates)) {
+            $isCurrentUserOwner = $team->users()
+                ->where('user_id', auth()->id())
+                ->where('role', 'owner')
+                ->exists();
 
-        // We check every current admin: will at least one remain an admin?
-        foreach ($adminIds as $adminId) {
-            // If this admin is NOT being updated, or is being updated to an admin role
-            if (!isset($updates[$adminId]) || in_array($updates[$adminId], ['owner', 'manager'])) {
-                $willStillHaveAdmin = true;
-                break;
+            if (!$isCurrentUserOwner) {
+                return redirect()->route('home', ['tab' => 'teams'])->withErrors([
+                    'role' => 'Solo il proprietario del team può trasferire la proprietà.'
+                ]);
+            }
+
+            // Guard: Prevent setting more than one user as owner at a time
+            $newOwnerCount = collect($updates)->filter(fn($r) => $r === 'owner')->count();
+            if ($newOwnerCount > 1) {
+                return redirect()->route('home', ['tab' => 'teams'])->withErrors([
+                    'role' => 'Solo un proprietario è consentito per team.'
+                ]);
             }
         }
 
-        if (!$willStillHaveAdmin) {
+        // 3. Compute the resulting role state after applying all updates
+        $currentRoles = $team->users->pluck('pivot.role', 'id')->toArray();
+        $resultingRoles = array_merge($currentRoles, $updates);
+
+        // Account for the auto-demotion of the current owner when ownership is transferred
+        $newOwnerIdFromUpdates = collect($updates)->search(fn($r) => $r === 'owner');
+        if ($newOwnerIdFromUpdates !== false) {
+            $currentOwner = $team->users->first(fn($u) => $u->pivot->role === 'owner');
+            if ($currentOwner && (int)$newOwnerIdFromUpdates !== $currentOwner->id && !isset($updates[$currentOwner->id])) {
+                $resultingRoles[$currentOwner->id] = 'member';
+            }
+        }
+
+        // 4. Ensure the resulting state has at least one member with admin privileges
+        $willHaveAdmin = collect($resultingRoles)
+            ->filter(fn($role) => in_array($role, ['owner', 'manager']))
+            ->isNotEmpty();
+
+        if (!$willHaveAdmin) {
             return redirect()->route('home', ['tab' => 'teams'])->withErrors([
-                'role' => 'Cannot update roles: The team must have at least one member with management permissions.'
+                'role' => 'Il team deve avere almeno un membro con permessi di gestione.'
             ]);
         }
 
         // 5. Execute updates in a Database Transaction & update roles
         \DB::transaction(function () use ($updates, $team) {
+            // Handle ownership transfer: auto-demote the current owner when a new owner is being set
+            $newOwnerIdFromUpdates = collect($updates)->search(fn($r) => $r === 'owner');
+            if ($newOwnerIdFromUpdates !== false) {
+                $currentOwner = $team->users->first(fn($u) => $u->pivot->role === 'owner');
+                if ($currentOwner && (int)$newOwnerIdFromUpdates !== $currentOwner->id && !isset($updates[$currentOwner->id])) {
+                    setPermissionsTeamId($team->id);
+                    $team->users()->updateExistingPivot($currentOwner->id, ['role' => 'member']);
+                    $currentOwner->syncRoles(['member']);
+                    if (auth()->id() == $currentOwner->id) {
+                        $currentOwner->forgetCachedPermissions();
+                    }
+                }
+            }
+
             foreach ($updates as $userId => $roleName) {
                 $user = \App\Models\User::find($userId);
 
