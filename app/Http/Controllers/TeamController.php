@@ -130,7 +130,7 @@ class TeamController extends Controller
         // 2. Validation (Note: we removed 'exists:users' because the user might be new)
         $validated = $request->validate([
             'email' => 'required|email',
-            'role'  => 'required|string|in:owner,manager,member,guest',
+            'role'  => 'required|string|in:manager,member,guest',
         ]);
 
         // 3. Prevent duplicate active invitations for the same team
@@ -139,13 +139,13 @@ class TeamController extends Controller
             ->first();
 
         if ($existingInvitation) {
-            return redirect()->route('home', ['tab' => 'teams'])->withErrors(['email' => 'Un invito è già stato inoltrato di recente...']);
+            return back()->withErrors(['email' => 'Un invito è già stato inoltrato di recente...']);
         }
 
         // 4. Check if the user is already a member of the team
         $existingUser = \App\Models\User::where('email', $validated['email'])->first();
         if ($existingUser && $team->users()->where('user_id', $existingUser->id)->exists()) {
-            return redirect()->route('home', ['tab' => 'teams'])->withErrors(['email' => 'L\'utente selezionato appartiene già al team']);
+            return back()->withErrors(['email' => 'L\'utente selezionato appartiene già al team']);
         }
 
         // 5. Create the invitation record
@@ -263,30 +263,66 @@ class TeamController extends Controller
 
         $updates = $validated['updates'];
 
-        // 3. Safety Check: Calculate how many admins exist BEFORE changes
-        $admins = $team->users->filter(fn($u) => $u->can('change member roles'));
-        $adminIds = $admins->pluck('id')->toArray();
+        // Guard: The owner cannot demote themselves directly; they must transfer ownership first
+        $currentUserPivotRole = $team->getRole(auth()->user());
 
-        // 4. Check if we are declassing all existing admins
-        $willStillHaveAdmin = false;
-
-        // We check every current admin: will at least one remain an admin?
-        foreach ($adminIds as $adminId) {
-            // If this admin is NOT being updated, or is being updated to an admin role
-            if (!isset($updates[$adminId]) || in_array($updates[$adminId], ['owner', 'manager'])) {
-                $willStillHaveAdmin = true;
-                break;
-            }
-        }
-
-        if (!$willStillHaveAdmin) {
-            return redirect()->route('home', ['tab' => 'teams'])->withErrors([
-                'role' => 'Cannot update roles: The team must have at least one member with management permissions.'
+        if ($currentUserPivotRole === 'owner' && isset($updates[auth()->id()]) && $updates[auth()->id()] !== 'owner') {
+            return back()->withErrors([
+                'role' => 'Il proprietario non può cambiare il proprio ruolo. Trasferisci prima la proprietà a un altro membro.'
             ]);
         }
 
-        // 5. Execute updates in a Database Transaction & update roles
+        // Guard: Only the current team owner can transfer ownership
+        if (in_array('owner', $updates)) {
+            $isCurrentUserOwner = $team->users()
+                ->where('user_id', auth()->id())
+                ->where('role', 'owner')
+                ->exists();
+
+            if (!$isCurrentUserOwner) {
+                return back()->withErrors([
+                    'role' => 'Solo il proprietario del team può trasferire la proprietà.'
+                ]);
+            }
+
+            // Guard: Prevent setting more than one user as owner at a time
+            $newOwnerCount = collect($updates)->filter(fn($r) => $r === 'owner')->count();
+            if ($newOwnerCount > 1) {
+                return back()->withErrors([
+                    'role' => 'Solo un proprietario è consentito per team.'
+                ]);
+            }
+        }
+
+        // 3. Compute the resulting role state after applying all updates
+        $currentRoles = $team->users->pluck('pivot.role', 'id')->toArray();
+        $resultingRoles = array_merge($currentRoles, $updates);
+
+        // Account for the auto-demotion of the current owner when ownership is transferred
+        $newOwnerIdFromUpdates = collect($updates)->search(fn($r) => $r === 'owner');
+        if ($newOwnerIdFromUpdates !== false) {
+            $currentOwner = $team->users->first(fn($u) => $u->pivot->role === 'owner');
+            if ($currentOwner && (int)$newOwnerIdFromUpdates !== $currentOwner->id && !isset($updates[$currentOwner->id])) {
+                $resultingRoles[$currentOwner->id] = 'member';
+            }
+        }
+
+        // 4. Execute updates in a Database Transaction & update roles
         \DB::transaction(function () use ($updates, $team) {
+            // Handle ownership transfer: auto-demote the current owner when a new owner is being set
+            $newOwnerIdFromUpdates = collect($updates)->search(fn($r) => $r === 'owner');
+            if ($newOwnerIdFromUpdates !== false) {
+                $currentOwner = $team->users->first(fn($u) => $u->pivot->role === 'owner');
+                if ($currentOwner && (int)$newOwnerIdFromUpdates !== $currentOwner->id && !isset($updates[$currentOwner->id])) {
+                    setPermissionsTeamId($team->id);
+                    $team->users()->updateExistingPivot($currentOwner->id, ['role' => 'member']);
+                    $currentOwner->syncRoles(['member']);
+                    if (auth()->id() == $currentOwner->id) {
+                        $currentOwner->forgetCachedPermissions();
+                    }
+                }
+            }
+
             foreach ($updates as $userId => $roleName) {
                 $user = \App\Models\User::find($userId);
 
@@ -303,7 +339,7 @@ class TeamController extends Controller
             }
         });
 
-        // 6. Clear global Spatie cache to ensure immediate effect
+        // 5. Clear global Spatie cache to ensure immediate effect
         app(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
 
         return redirect()->route('home', ['tab' => 'teams'])
