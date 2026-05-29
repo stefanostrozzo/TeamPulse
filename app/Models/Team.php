@@ -36,4 +36,10 @@ class Team extends Model
     {
         return $this->hasMany(Invitation::class);
     }
+
+    public function getRole(User $user) : string
+    {
+        $pivot = $this->users()->where('user_id', $user->id)->first()->pivot;
+        return $pivot->role;
+    }
 }

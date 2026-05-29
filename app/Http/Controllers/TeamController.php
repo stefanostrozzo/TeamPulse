@@ -139,13 +139,13 @@ class TeamController extends Controller
             ->first();
 
         if ($existingInvitation) {
-            return redirect()->route('home', ['tab' => 'teams'])->withErrors(['email' => 'Un invito è già stato inoltrato di recente...']);
+            return back()->withErrors(['email' => 'Un invito è già stato inoltrato di recente...']);
         }
 
         // 4. Check if the user is already a member of the team
         $existingUser = \App\Models\User::where('email', $validated['email'])->first();
         if ($existingUser && $team->users()->where('user_id', $existingUser->id)->exists()) {
-            return redirect()->route('home', ['tab' => 'teams'])->withErrors(['email' => 'L\'utente selezionato appartiene già al team']);
+            return back()->withErrors(['email' => 'L\'utente selezionato appartiene già al team']);
         }
 
         // 5. Create the invitation record
@@ -264,9 +264,10 @@ class TeamController extends Controller
         $updates = $validated['updates'];
 
         // Guard: The owner cannot demote themselves directly; they must transfer ownership first
-        $currentUserPivotRole = $team->users()->where('user_id', auth()->id())->value('role');
+        $currentUserPivotRole = $team->getRole(auth()->user());
+
         if ($currentUserPivotRole === 'owner' && isset($updates[auth()->id()]) && $updates[auth()->id()] !== 'owner') {
-            return redirect()->route('home', ['tab' => 'teams'])->withErrors([
+            return back()->withErrors([
                 'role' => 'Il proprietario non può cambiare il proprio ruolo. Trasferisci prima la proprietà a un altro membro.'
             ]);
         }
@@ -279,7 +280,7 @@ class TeamController extends Controller
                 ->exists();
 
             if (!$isCurrentUserOwner) {
-                return redirect()->route('home', ['tab' => 'teams'])->withErrors([
+                return back()->withErrors([
                     'role' => 'Solo il proprietario del team può trasferire la proprietà.'
                 ]);
             }
@@ -287,7 +288,7 @@ class TeamController extends Controller
             // Guard: Prevent setting more than one user as owner at a time
             $newOwnerCount = collect($updates)->filter(fn($r) => $r === 'owner')->count();
             if ($newOwnerCount > 1) {
-                return redirect()->route('home', ['tab' => 'teams'])->withErrors([
+                return back()->withErrors([
                     'role' => 'Solo un proprietario è consentito per team.'
                 ]);
             }
@@ -306,18 +307,7 @@ class TeamController extends Controller
             }
         }
 
-        // 4. Ensure the resulting state has at least one member with admin privileges
-        $willHaveAdmin = collect($resultingRoles)
-            ->filter(fn($role) => in_array($role, ['owner', 'manager']))
-            ->isNotEmpty();
-
-        if (!$willHaveAdmin) {
-            return redirect()->route('home', ['tab' => 'teams'])->withErrors([
-                'role' => 'Il team deve avere almeno un membro con permessi di gestione.'
-            ]);
-        }
-
-        // 5. Execute updates in a Database Transaction & update roles
+        // 4. Execute updates in a Database Transaction & update roles
         \DB::transaction(function () use ($updates, $team) {
             // Handle ownership transfer: auto-demote the current owner when a new owner is being set
             $newOwnerIdFromUpdates = collect($updates)->search(fn($r) => $r === 'owner');
@@ -349,7 +339,7 @@ class TeamController extends Controller
             }
         });
 
-        // 6. Clear global Spatie cache to ensure immediate effect
+        // 5. Clear global Spatie cache to ensure immediate effect
         app(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
 
         return redirect()->route('home', ['tab' => 'teams'])
