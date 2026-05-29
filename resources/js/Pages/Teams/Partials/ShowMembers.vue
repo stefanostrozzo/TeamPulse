@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref, onMounted } from 'vue';
+import { computed, ref, onMounted, watch } from 'vue';
 import { useForm, usePage, router } from '@inertiajs/vue3';
 import Swal from 'sweetalert2';
 import TextInput from '@/Components/Items/TextInput.vue';
@@ -56,6 +56,43 @@ const canManage = computed(() => {
 });
 
 /**
+ * Checks if the current user is the owner of this team.
+ */
+const isOwner = computed(() => {
+    const currentUser = page.props.auth.user;
+    const userInTeam = props.team.users?.find(u => u.id === currentUser.id);
+    return userInTeam?.pivot?.role === 'owner';
+});
+
+/**
+ * Roles available in the member-list dropdown.
+ * Owners see all 4 roles (to enable transfers); managers only see the lower 3.
+ */
+const availableRoleLabels = computed(() => {
+    if (isOwner.value) return roleLabels;
+    const { owner, ...rest } = roleLabels;
+    return rest;
+});
+
+/**
+ * Roles available in the invite form.
+ * 'owner' is always excluded: ownership is transferred, never invited.
+ */
+const inviteRoleLabels = computed(() => {
+    const { owner, ...rest } = roleLabels;
+    return rest;
+});
+
+/**
+ * Returns the currently displayed role for a user, preferring the staged
+ * local change over the server-confirmed pivot value.
+ * Used to make the select revert visually when a save fails.
+ */
+const currentRoleFor = (userId) => {
+    return roleUpdates.value[userId] ?? props.team.users?.find(u => u.id === userId)?.pivot?.role;
+};
+
+/**
  * Stage a role change locally
  * @param {Number} userId
  * @param {String} newRole
@@ -91,16 +128,39 @@ const saveRoleChanges = () => {
                 });
             },
             onError: () => {
-                Swal.fire({
-                    title: 'Errore',
-                    text: 'Si è verificato un problema durante l\'aggiornamento.',
-                    icon: 'error',
-                    background: '#1f2937',
-                    color: '#ffffff',
-                });
+                roleUpdates.value = {};
+                hasRoleChanges.value = false;
             }
         });
 };
+
+/**
+ * Watch for backend errors returned via session flash (redirect()->withErrors()).
+ * Inertia v2 onError doesn't fire for those — they land in page.props.errors instead.
+ */
+watch(() => page.props.errors, (errors) => {
+    if (!errors) return;
+
+    if (errors.role) {
+        roleUpdates.value = {};
+        hasRoleChanges.value = false;
+        Swal.fire({
+            title: 'Modifica ruolo non consentita',
+            text: errors.role,
+            icon: 'error',
+            background: '#1f2937',
+            color: '#ffffff',
+        });
+    } else if (errors.error) {
+        Swal.fire({
+            title: 'Rimozione non consentita',
+            text: errors.error,
+            icon: 'error',
+            background: '#1f2937',
+            color: '#ffffff',
+        });
+    }
+}, { deep: true, immediate: true });
 
 /**
  * Handle team invitation submission
@@ -223,19 +283,29 @@ onMounted(() => {
 
                     <div class="flex items-center gap-4">
                         <template v-if="canManage">
-                            <select
-                                @change="stageRoleChange(user.id, $event.target.value)"
-                                class="bg-gray-900 border border-gray-700 text-[10px] px-2 py-1 rounded text-[#07b4f6] uppercase font-bold outline-none focus:ring-1 focus:ring-[#07b4f6]"
-                            >
-                                <option
-                                    v-for="(label, key) in roleLabels"
-                                    :key="key"
-                                    :value="key"
-                                    :selected="user.pivot?.role === key"
+                            <template v-if="user.pivot?.role === 'owner'">
+                                <span
+                                    class="text-[10px] px-2 py-1 rounded bg-gray-900 text-[#07b4f6] uppercase font-bold border border-gray-700"
+                                    :title="isOwner ? 'Trasferisci la proprietà prima di cambiare il tuo ruolo' : 'Il ruolo del proprietario non è modificabile'"
                                 >
-                                    {{ label }}
-                                </option>
-                            </select>
+                                    {{ roleLabels[user.pivot?.role] }}
+                                </span>
+                            </template>
+                            <template v-else>
+                                <select
+                                    @change="stageRoleChange(user.id, $event.target.value)"
+                                    class="bg-gray-900 border border-gray-700 text-[10px] px-2 py-1 rounded text-[#07b4f6] uppercase font-bold outline-none focus:ring-1 focus:ring-[#07b4f6]"
+                                >
+                                    <option
+                                        v-for="(label, key) in availableRoleLabels"
+                                        :key="key"
+                                        :value="key"
+                                        :selected="currentRoleFor(user.id) === key"
+                                    >
+                                        {{ label }}
+                                    </option>
+                                </select>
+                            </template>
                         </template>
                         <template v-else>
                             <span class="text-[10px] px-2 py-1 rounded bg-gray-900 text-gray-400 uppercase font-bold border border-gray-700">
@@ -290,7 +360,7 @@ onMounted(() => {
                                 v-model="inviteForm.role"
                                 class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-2 text-white focus:ring-2 focus:ring-[#07b4f6] outline-none"
                             >
-                                <option v-for="(label, key) in roleLabels" :key="key" :value="key">
+                                <option v-for="(label, key) in inviteRoleLabels" :key="key" :value="key">
                                     {{ label }}
                                 </option>
                             </select>

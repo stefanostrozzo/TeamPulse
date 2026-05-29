@@ -55,32 +55,40 @@ class PermissionSeeder extends Seeder
         $manager = Role::firstOrCreate(['name' => 'manager']);
         $manager->givePermissionTo([
             'invite members',
+            'remove members',
+            'manage team settings',
             'create projects',
             'edit projects',
+            'delete projects',
             'view all projects',
             'create tasks',
             'edit tasks',
+            'delete tasks',
             'assign tasks',
             'move tasks',
             'post comments',
             'manage comments',
             'manage watchers',
             'change member roles',
-            'delete tasks'
         ]);
 
         //Member role
         $member = Role::firstOrCreate(['name' => 'member']);
         $member->givePermissionTo([
+            'view all projects',
+            'create projects',
             'create tasks',
             'edit tasks',
             'delete tasks',
+            'assign tasks',
             'move tasks',
             'post comments',
         ]);
 
         //Guest role (can only view)
         $guest = Role::firstOrCreate(['name' => 'guest']);
-        $guest->givePermissionTo();
+        $guest->givePermissionTo([
+            'view all projects',
+        ]);
     }
 }
