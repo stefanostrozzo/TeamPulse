@@ -131,14 +131,20 @@ class TimeTrackingService
      * Personal report: all completed entries for $user in $period, scoped to $teamId.
      * Returns a shape ready for the frontend chart + table.
      */
-    public function getPersonalReport(User $user, string $period, ?int $teamId): array
+    public function getPersonalReport(User $user, string $period, ?int $teamId, ?int $projectId = null, ?string $startDate = null, ?string $endDate = null): array
     {
-        [$start, $end] = $this->periodBounds($period);
+        if ($startDate && $endDate) {
+            $start = Carbon::parse($startDate)->startOfDay();
+            $end = Carbon::parse($endDate)->endOfDay();
+        } else {
+            [$start, $end] = $this->periodBounds($period);
+        }
 
         $entries = TimeEntry::where('user_id', $user->id)
             ->whereNotNull('ended_at')
             ->whereBetween('started_at', [$start, $end])
             ->when($teamId, fn ($q) => $q->whereHas('task', fn ($tq) => $tq->where('team_id', $teamId)))
+            ->when($projectId, fn ($q) => $q->whereHas('task', fn ($tq) => $tq->where('project_id', $projectId)))
             ->with(['task:id,title,project_id', 'task.project:id,name'])
             ->orderBy('started_at', 'desc')
             ->get();
@@ -159,13 +165,19 @@ class TimeTrackingService
      * Team report: all completed entries for all users in $teamId in $period.
      * Only callable by managers â€” controller enforces policy.
      */
-    public function getTeamReport(int $teamId, string $period): array
+    public function getTeamReport(int $teamId, string $period, ?int $projectId = null, ?string $startDate = null, ?string $endDate = null): array
     {
-        [$start, $end] = $this->periodBounds($period);
+        if ($startDate && $endDate) {
+            $start = Carbon::parse($startDate)->startOfDay();
+            $end = Carbon::parse($endDate)->endOfDay();
+        } else {
+            [$start, $end] = $this->periodBounds($period);
+        }
 
         $entries = TimeEntry::whereNotNull('ended_at')
             ->whereHas('task', fn ($q) => $q->where('team_id', $teamId))
             ->whereBetween('started_at', [$start, $end])
+            ->when($projectId, fn ($q) => $q->whereHas('task', fn ($tq) => $tq->where('project_id', $projectId)))
             ->with(['user:id,name', 'task:id,title,project_id', 'task.project:id,name'])
             ->orderBy('started_at', 'desc')
             ->get();
@@ -184,6 +196,12 @@ class TimeTrackingService
             'entries'       => $entries,
             'total_seconds' => $entries->sum('duration_seconds'),
             'by_user'       => $byUser,
+            'by_project'    => $entries
+                ->groupBy(fn ($e) => $e->task->project->name ?? 'Senza Progetto')
+                ->map(fn ($g) => $g->sum('duration_seconds')),
+            'by_day'        => $entries
+                ->groupBy(fn ($e) => $e->started_at->toDateString())
+                ->map(fn ($g) => $g->sum('duration_seconds')),
         ];
     }
 

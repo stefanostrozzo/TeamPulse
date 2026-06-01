@@ -5,6 +5,8 @@ namespace App\Providers;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
 use App\Models\Project;
+use App\Models\Team;
+use App\Observers\TeamObserver;
 use App\Policies\ProjectPolicy;
 use Illuminate\Support\Facades\Gate;
 
@@ -23,6 +25,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Team::observe(TeamObserver::class);
         Vite::prefetch(concurrency: 3);
         Gate::before(function ($user, $ability) {
             return $user->hasRole('superadmin') ? true : null;

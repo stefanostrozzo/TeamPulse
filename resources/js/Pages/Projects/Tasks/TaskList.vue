@@ -1,6 +1,12 @@
 <script setup>
 import { computed } from 'vue';
+import { usePage } from '@inertiajs/vue3';
 import TaskRow from './TaskRow.vue';
+
+const page = usePage();
+const taskTypeMap = computed(() =>
+    Object.fromEntries((page.props.taskTypes ?? []).map(t => [t.id, t]))
+);
 
 const emit = defineEmits(['edit', 'toggle', 'expand-all', 'collapse-all']);
 const props = defineProps({
@@ -62,6 +68,7 @@ const taskTree = computed(() => {
                 <th class="px-6 py-4 font-medium w-24 text-center">Numero</th>
                 <th class="px-6 py-4 font-medium">Titolo</th>
                 <th class="px-6 py-4 font-medium text-center">Stato</th>
+                <th class="px-6 py-3 text-[10px] font-semibold uppercase tracking-wider text-gray-500 text-center">Tipo</th>
                 <th class="px-6 py-4 font-medium">Assegnato a</th>
                 <th class="px-6 py-4 font-medium">Priorità</th>
                 <th class="px-6 py-4 font-medium">Scadenza</th>
@@ -74,6 +81,7 @@ const taskTree = computed(() => {
                     :task="task"
                     :level="0"
                     :expanded-tasks="expandedTasks"
+                    :task-type-map="taskTypeMap"
                     @toggle="(id) => emit('toggle', id)"
                     @edit="(t) => emit('edit', t)"
                 />

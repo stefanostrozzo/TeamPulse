@@ -6,6 +6,7 @@ use App\Services\TimeTrackingService;
 use App\Models\User;
 use App\Models\Project;
 use App\Models\Task;
+use App\Models\TaskType;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -39,11 +40,18 @@ class DashboardController extends Controller
         */
         $initialProjectId = $request->integer('initialProjectId') ?: null;
 
+        if ($currentTeamId) {
+            setPermissionsTeamId($currentTeamId);
+            $user->unsetRelation('roles');
+            $user->unsetRelation('permissions');
+        }
+
         return Inertia::render('Home', [
             'activeTab' => $activeTab,
             'currentTeamId' => $currentTeamId,
             'teamsCount' => $user->teams()->count(),
             'initialProjectId' => $initialProjectId,
+            'isManager' => $currentTeamId ? $user->hasAnyRole(['owner', 'manager']) : false,
             'unreadMessagesCount' => app(\App\Services\MessageService::class)->getUnreadCountForUser($user),
             'activeTimer' => $timeTracking->getActiveTimer($user)?->makeHidden([])
                 ->load(['task:id,title,project_id', 'task.project:id,name']),
@@ -132,7 +140,7 @@ class DashboardController extends Controller
             */
             'projects' => ($activeTab === 'projects' && $currentTeamId)
                 ? Project::where('team_id', $currentTeamId)
-                    ->with(['tasks.comments.user', 'members', 'tasks.assignee'])
+                    ->with(['tasks.comments.user', 'members', 'tasks.assignee', 'tasks.taskType'])
                     ->get()
                     ->map(function ($project) use ($user) {
                         setPermissionsTeamId($project->team_id);
@@ -155,6 +163,10 @@ class DashboardController extends Controller
                         ->where('end_date', '<', now())
                         ->count(),
             ] : null,
+
+            'taskTypes' => $currentTeamId
+                ? TaskType::where('team_id', $currentTeamId)->orderBy('name')->get(['id', 'name', 'color'])
+                : [],
 
             'mustVerifyEmail' => $user->hasVerifiedEmail(),
             'status' => session('status'),

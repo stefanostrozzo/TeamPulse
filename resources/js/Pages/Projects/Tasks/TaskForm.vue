@@ -1,6 +1,7 @@
 <script setup>
 import { useForm, router } from '@inertiajs/vue3';
 import { onMounted, watch, computed, ref } from 'vue';
+import { usePage } from '@inertiajs/vue3';
 import InputError from '@/Components/Items/InputError.vue';
 import Select from 'primevue/select';
 import CommentEditor from '../Comments/CommentEditor.vue';
@@ -35,7 +36,7 @@ const form = useForm({
     description: '',
     status: 'todo',
     priority: 'low',
-    type: 'feature',
+    task_type_id: null,
     assignee_id: props.task?.assignee_id ?? null,
     start_date: '',
     due_date: '',
@@ -57,11 +58,11 @@ const priorityOptions = [
     { label: 'Alta', value: 'high' }
 ];
 
-const typeOptions = [
-    { label: 'Funzionalità', value: 'feature' },
-    { label: 'Bug/Errore', value: 'bug' },
-    { label: 'Miglioramento', value: 'improvement' }
-];
+const page = usePage();
+
+const typeOptions = computed(() =>
+    (page.props.taskTypes ?? []).map(t => ({ label: t.name, value: t.id, color: t.color }))
+);
 
 /**
  * Compute available assignees, including a null option for unassigned tasks.
@@ -79,7 +80,7 @@ const pickFormState = () => ({
     description: form.description ?? '',
     status: form.status ?? 'todo',
     priority: form.priority ?? 'low',
-    type: form.type ?? 'feature',
+    task_type_id: form.task_type_id ?? null,
     assignee_id: form.assignee_id ?? null,
     start_date: form.start_date ?? '',
     due_date: form.due_date ?? '',
@@ -202,7 +203,7 @@ const fillForm = () => {
             description: props.task.description ?? '',
             status: props.task.status ?? 'todo',
             priority: props.task.priority ?? 'low',
-            type: props.task.type ?? 'feature',
+            task_type_id: props.task.task_type_id ?? null,
             assignee_id: props.task.assignee_id ?? null,
             progress: props.task.progress ?? 0,
             task_parent_id: props.task.task_parent_id ?? null,
@@ -293,8 +294,17 @@ watch(() => JSON.stringify(pickFormState()), scheduleAutosave);
                     <div class="text-gray-500 flex items-center">
                         <i class="fas fa-tag mr-3 w-4"></i> Tipologia
                     </div>
-                    <Select v-model="form.type" :options="typeOptions" optionLabel="label" optionValue="value"
-                            class="col-span-2 custom-prime-ghost" />
+                    <Select v-model="form.task_type_id" :options="typeOptions" optionLabel="label" optionValue="value"
+                            placeholder="Nessuna tipologia"
+                            class="col-span-2 custom-prime-ghost">
+                        <template #option="slotProps">
+                            <div class="flex items-center gap-2">
+                                <span class="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                                      :style="{ backgroundColor: slotProps.option.color }"></span>
+                                <span>{{ slotProps.option.label }}</span>
+                            </div>
+                        </template>
+                    </Select>
                 </div>
 
                 <div class="grid grid-cols-3 items-center">

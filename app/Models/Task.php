@@ -21,6 +21,7 @@ class Task extends Model
         'description',
         'status',
         'priority',
+        'task_type_id',
         'start_date',
         'due_date',
         'completed_at',
@@ -54,6 +55,11 @@ class Task extends Model
     public function assignee(): BelongsTo
     {
         return $this->belongsTo(User::class, 'assignee_id');
+    }
+
+    public function taskType(): BelongsTo
+    {
+        return $this->belongsTo(TaskType::class);
     }
 
     /**

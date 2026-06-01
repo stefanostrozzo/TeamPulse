@@ -2,7 +2,8 @@
 const props = defineProps({
     task: Object,
     level: Number,
-    expandedTasks: Object
+    expandedTasks: Object,
+    taskTypeMap: { type: Object, default: () => ({}) }
 });
 
 const emit = defineEmits(['toggle', 'edit']);
@@ -56,6 +57,16 @@ const PRIORITY_LABELS = {
                   :class="TASK_STATUSES[task.status]?.color">
                 {{ TASK_STATUSES[task.status]?.label || task.status }}
             </span>
+        </td>
+
+        <td class="px-6 py-4 text-center">
+            <span v-if="task.task_type_id && taskTypeMap[task.task_type_id]"
+                  class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[9px] font-semibold bg-gray-800 border border-gray-700">
+                <span class="w-2 h-2 rounded-full flex-shrink-0"
+                      :style="{ backgroundColor: taskTypeMap[task.task_type_id].color }"></span>
+                {{ taskTypeMap[task.task_type_id].name }}
+            </span>
+            <span v-else class="text-gray-600 text-[9px]">—</span>
         </td>
 
         <td class="px-6 py-4 text-xs text-gray-400">

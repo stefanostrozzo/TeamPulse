@@ -113,17 +113,65 @@ class TimeEntryController extends Controller
      */
     public function report(Request $request): JsonResponse
     {
-        $user   = $request->user();
-        $period = $request->get('period', 'month');
-        $teamId = $user->current_team_id;
+        $user       = $request->user();
+        $period     = $request->get('period', 'month');
+        $projectId  = $request->get('project_id') ? (int) $request->get('project_id') : null;
+        $startDate  = $request->get('start_date');
+        $endDate    = $request->get('end_date');
+        $teamId     = $user->current_team_id;
 
         if ($request->boolean('team')) {
             $this->authorize('viewTeamReport', TimeEntry::class);
-            $data = $this->service->getTeamReport($teamId, $period);
+            $data = $this->service->getTeamReport($teamId, $period, $projectId, $startDate, $endDate);
         } else {
-            $data = $this->service->getPersonalReport($user, $period, $teamId);
+            $data = $this->service->getPersonalReport($user, $period, $teamId, $projectId, $startDate, $endDate);
         }
 
+        // Aggrega la lista di tutti i progetti del team per riempire il menu a tendina
+        $data['projects'] = \App\Models\Project::where('team_id', $teamId)
+            ->select('id', 'name')
+            ->get();
+
         return response()->json($data);
+    }
+
+    /**
+     * Renderizza un report di attività professionale ottimizzato per la stampa o PDF.
+     */
+    public function printReport(Request $request)
+    {
+        $user       = $request->user();
+        $period     = $request->get('period', 'month');
+        $projectId  = $request->get('project_id') ? (int) $request->get('project_id') : null;
+        $startDate  = $request->get('start_date');
+        $endDate    = $request->get('end_date');
+        $teamId     = $user->current_team_id;
+        $isTeam     = $request->boolean('team');
+
+        if ($isTeam) {
+            $this->authorize('viewTeamReport', TimeEntry::class);
+            $data = $this->service->getTeamReport($teamId, $period, $projectId, $startDate, $endDate);
+        } else {
+            $data = $this->service->getPersonalReport($user, $period, $teamId, $projectId, $startDate, $endDate);
+        }
+
+        // Raggruppa i dati per giorno in ordine cronologico inverso
+        $entriesGrouped = $data['entries']->groupBy(function ($entry) {
+            return \Carbon\Carbon::parse($entry->started_at)->toDateString();
+        })->sortKeysDesc();
+
+        $selectedProject = $projectId ? \App\Models\Project::find($projectId) : null;
+
+        return view('reports.print', [
+            'entriesGrouped'  => $entriesGrouped,
+            'totalSeconds'    => $data['total_seconds'],
+            'isTeam'          => $isTeam,
+            'user'            => $user,
+            'startDate'       => $startDate,
+            'endDate'         => $endDate,
+            'period'          => $period,
+            'selectedProject' => $selectedProject,
+            'byProject'       => $data['by_project'] ?? [],
+        ]);
     }
 }

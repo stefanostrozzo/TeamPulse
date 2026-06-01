@@ -9,6 +9,7 @@ use App\Http\Controllers\TeamController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\SearchController;
+use App\Http\Controllers\TaskTypeController;
 
 //Main route for the SPA application
 Route::get('/', [DashboardController::class, 'index'])
@@ -36,6 +37,11 @@ Route::middleware(['auth', 'web'])->group(function () {
     Route::delete('/project/{project}', [ProjectController::class, 'destroy'])->name('project.destroy');
 
     Route::resource('tasks', TaskController::class)->only(['store', 'update', 'destroy']);
+
+    Route::get('/task-types', [TaskTypeController::class, 'index'])->name('task-types.index');
+    Route::post('/task-types', [TaskTypeController::class, 'store'])->name('task-types.store');
+    Route::put('/task-types/{taskType}', [TaskTypeController::class, 'update'])->name('task-types.update');
+    Route::delete('/task-types/{taskType}', [TaskTypeController::class, 'destroy'])->name('task-types.destroy');
 
     Route::post('tasks/{task}/comments', [CommentController::class, 'store'])->name('comments.store');
     Route::resource('comments', CommentController::class)->only(['update', 'destroy']);
@@ -67,6 +73,7 @@ Route::middleware(['auth', 'web'])->group(function () {
         Route::post('/start', [\App\Http\Controllers\TimeEntryController::class, 'start'])->name('time.start');
         Route::post('/stop', [\App\Http\Controllers\TimeEntryController::class, 'stop'])->name('time.stop');
         Route::get('/report', [\App\Http\Controllers\TimeEntryController::class, 'report'])->name('time.report');
+        Route::get('/report/print', [\App\Http\Controllers\TimeEntryController::class, 'printReport'])->name('time.report.print');
         Route::post('/tasks/{task}/entries', [\App\Http\Controllers\TimeEntryController::class, 'store'])->name('time.store');
         Route::get('/tasks/{task}/entries', [\App\Http\Controllers\TimeEntryController::class, 'index'])->name('time.index');
         Route::put('/entries/{entry}', [\App\Http\Controllers\TimeEntryController::class, 'update'])->name('time.update');

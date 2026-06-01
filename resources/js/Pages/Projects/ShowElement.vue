@@ -5,6 +5,8 @@ import Swal from 'sweetalert2';
 import TaskList from '@/Pages/Projects/Tasks/TaskList.vue';
 import TaskForm from "@/Pages/Projects/Tasks/TaskForm.vue";
 import KanbanBoard from "@/Pages/Kanban/KanbanBoard.vue";
+import Modal from "@/Components/Items/Modal.vue";
+import TaskTypeManager from "@/Components/TaskTypeManager.vue";
 import {router} from "@inertiajs/vue3";
 
 const props = defineProps({
@@ -17,6 +19,7 @@ const emit = defineEmits(['back', 'clear-highlight']);
 const activeTab = ref('elenco');
 
 const isModalOpen = ref(false);
+const isTypeManagerOpen = ref(false);
 const selectedTask = ref(null);
 const taskSidebarEl = ref(null);
 const taskHasUnsavedChanges = ref(false);
@@ -193,6 +196,12 @@ watch(() => props.highlightTaskId, handleHighlight);
                             {{ project.end_date ? new Date(project.end_date).toLocaleDateString('it-IT') : 'Nessuna Scadenza' }}
                         </span>
                     </div>
+
+                    <button @click="isTypeManagerOpen = true"
+                            class="flex items-center px-3 py-1 bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-full text-gray-400 hover:text-white transition gap-1.5">
+                        <i class="fas fa-tags text-xs"></i>
+                        <span class="text-xs font-medium uppercase tracking-wider">Tipologie</span>
+                    </button>
                 </div>
             </div>
         </div>
@@ -269,4 +278,8 @@ watch(() => props.highlightTaskId, handleHighlight);
             </div>
         </div>
     </div>
+
+    <Modal :show="isTypeManagerOpen" @close="isTypeManagerOpen = false">
+        <TaskTypeManager @close="isTypeManagerOpen = false" @updated="isTypeManagerOpen = false" />
+    </Modal>
 </template>
