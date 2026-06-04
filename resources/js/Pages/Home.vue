@@ -1,8 +1,9 @@
 <script setup>
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
+import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
 import { usePage, router } from '@inertiajs/vue3';
 import { useToast } from 'primevue/usetoast';
 import { useMessagingStore } from '@/stores/messagingStore';
+import { useTimeTrackingStore } from '@/stores/timeTrackingStore';
 import { storeToRefs } from 'pinia';
 import Toast from 'primevue/toast';
 
@@ -11,6 +12,8 @@ import SidebarContainer from '@/Components/Sidebar/SidebarContainer.vue';
 import SidebarLogo from '@/Components/Sidebar/SidebarLogo.vue';
 import SidebarSection from '@/Components/Sidebar/SidebarSection.vue';
 import SidebarItem from '@/Components/Sidebar/SidebarItem.vue';
+import ActiveTimerBadge from '@/Components/TimeTracking/ActiveTimerBadge.vue';
+import TimeReportView from '@/Pages/TimeTracking/TimeReportView.vue';
 import ApplicationLogo from '@/Components/Items/ApplicationLogo.vue';
 import Topbar from '@/Components/Topbar/Topbar.vue';
 import NotificationDrawer from '@/Components/Drawer/NotificationDrawer.vue';
@@ -30,6 +33,7 @@ const showCreateTeamModal = ref(false);
 
 const toast = useToast();
 const store = useMessagingStore();
+const timeStore = useTimeTrackingStore();
 const { newIncomingMessage } = storeToRefs(store);
 
 const quickReplyText = ref({});
@@ -51,22 +55,24 @@ const goToSearchResult = (data) => {
     selectedTaskIdFromSearch.value = null;
     selectedMemberIdFromSearch.value = null;
 
-    if (type === 'project') {
-        navigateTo('projects', { initialProjectId: id });
-    }
-    else if (type === 'team') {
-        selectedTeamIdFromDashboard.value = id;
-        navigateTo('teams');
-    }
-    else if (type === 'task') {
-        selectedTaskIdFromSearch.value = id;
-        navigateTo('projects', { initialProjectId: projectId });
-    }
-    else if (type === 'member') {
-        selectedMemberIdFromSearch.value = id;
-        selectedTeamIdFromDashboard.value = page.props.auth.user.current_team_id;
-        navigateTo('teams');
-    }
+    nextTick(() => {
+        if (type === 'project') {
+            navigateTo('projects', { initialProjectId: id });
+        }
+        else if (type === 'team') {
+            selectedTeamIdFromDashboard.value = id;
+            navigateTo('teams');
+        }
+        else if (type === 'task') {
+            selectedTaskIdFromSearch.value = id;
+            navigateTo('projects', { initialProjectId: projectId });
+        }
+        else if (type === 'member') {
+            selectedMemberIdFromSearch.value = id;
+            selectedTeamIdFromDashboard.value = page.props.auth.user.current_team_id;
+            navigateTo('teams');
+        }
+    });
 };
 
 const goToProjectDetail = (id) => {
@@ -130,6 +136,7 @@ function logout() {
 onMounted(() => {
     // Initialize WebSockets and messaging state globally (idempotent — safe to call once).
     store.initialize(page.props.auth.user);
+    timeStore.initialize();
 
     if (page.props.teamsCount === 0 && page.props.activeTab !== 'teams') {
         showCreateTeamModal.value = true;
@@ -180,6 +187,16 @@ onUnmounted(() => {
                         </template>
                         Messaggi
                     </SidebarItem>
+
+                    <SidebarItem :active="currentTab === 'time'" :collapsed="collapsed" @click="navigateTo('time')">
+                        <template #icon>
+                            <div class="relative">
+                                <i class="fas fa-clock"></i>
+                                <span v-if="timeStore.hasActiveTimer" class="absolute -top-1 -right-2 w-2 h-2 bg-[#07b4f6] rounded-full animate-pulse"></span>
+                            </div>
+                        </template>
+                        Tempo
+                    </SidebarItem>
                 </SidebarSection>
 
                 <SidebarSection title="Amministrazione" :collapsed="collapsed">
@@ -189,6 +206,14 @@ onUnmounted(() => {
                     </SidebarItem>
                 </SidebarSection>
             </nav>
+
+            <div class="px-3 pb-2">
+                <ActiveTimerBadge
+                    :collapsed="collapsed"
+                    @navigate-to-time="navigateTo('time')"
+                    @open-task="(data) => goToSearchResult({ ...data, type: 'task' })"
+                />
+            </div>
 
             <div class="sidebar-footer px-3 py-4 border-t border-gray-700">
                 <SidebarItem
@@ -246,6 +271,10 @@ onUnmounted(() => {
                         <MessagingPanel />
                     </div>
 
+                    <div v-else-if="currentTab === 'time'">
+                        <TimeReportView @open-task="(data) => goToSearchResult({ ...data, type: 'task' })" />
+                    </div>
+
                     <div v-else-if="currentTab === 'profile'">
                         <ProfileEdit
                             :must-verify-email="page.props.mustVerifyEmail"
@@ -260,6 +289,9 @@ onUnmounted(() => {
         <UnreadMessagesDrawer :is-open="messagesOpen" @close="messagesOpen = false" @navigate="handleNavigateToConversation" />
 
     </div>
+
+    <!-- Global Toast for generic notifications -->
+    <Toast />
 
     <!-- Global Message Toast Notification -->
     <Toast position="bottom-right" group="message-toast" :pt="{ root: { class: 'w-80 md:w-96' }, content: { class: 'bg-gray-800 text-white border border-gray-700 rounded-xl shadow-2xl' }, icon: { class: 'hidden' }, detail: { class: 'w-full m-0' } }">

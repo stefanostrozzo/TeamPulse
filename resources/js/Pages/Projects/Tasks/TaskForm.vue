@@ -6,6 +6,7 @@ import Select from 'primevue/select';
 import CommentEditor from '../Comments/CommentEditor.vue';
 import CommentItem from '../Comments/CommentItem.vue';
 import TextInput from '@/Components/Items/TextInput.vue';
+import TaskTimeTracker from '@/Components/TimeTracking/TaskTimeTracker.vue';
 
 /**
  * Component Props
@@ -14,7 +15,8 @@ import TextInput from '@/Components/Items/TextInput.vue';
  */
 const props = defineProps({
     project: { type: Object, required: true },
-    task: { type: Object, default: null }
+    task: { type: Object, default: null },
+    isManager: { type: Boolean, default: false },
 });
 
 const updatedTask = computed(() => {
@@ -333,6 +335,18 @@ watch(() => JSON.stringify(pickFormState()), scheduleAutosave);
                           class="w-full bg-transparent border-none text-gray-300 placeholder-gray-700 focus:ring-0 resize-none p-0 text-sm leading-relaxed"
                           placeholder="Aggiungi dettagli su questa attività..."></textarea>
                 <InputError :message="form.errors.description" />
+            </div>
+
+            <!-- Time tracking section â€” only for existing tasks -->
+            <div v-if="task" class="mt-6 border-t border-gray-700 pt-6">
+                <h3 class="text-sm font-semibold text-gray-300 mb-3 uppercase tracking-widest">
+                    <i class="fas fa-clock mr-1"></i> Tempo
+                </h3>
+                <TaskTimeTracker
+                    :task="updatedTask"
+                    :team-members="project.members"
+                    :is-manager="isManager"
+                />
             </div>
 
             <div class="bg-gray-800/30 p-5 rounded-2xl border border-gray-800">

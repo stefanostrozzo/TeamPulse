@@ -26,13 +26,16 @@ class Task extends Model
         'completed_at',
         'progress',
         'task_parent_id',
+        'estimated_hours',
     ];
 
     protected $casts = [
-        'start_date'   => 'date',
-        'due_date'     => 'date',
-        'completed_at' => 'datetime',
-        'progress'     => 'integer',
+        'start_date'      => 'date',
+        'due_date'        => 'date',
+        'completed_at'    => 'datetime',
+        'progress'        => 'integer',
+        'estimated_hours' => 'float',
+        'time_spent'      => 'float',
     ];
 
     /**
@@ -78,5 +81,13 @@ class Task extends Model
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /**
+     * All time log entries for this task.
+     */
+    public function timeEntries(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(TimeEntry::class)->latest('started_at');
     }
 }

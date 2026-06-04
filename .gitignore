@@ -3,6 +3,7 @@
 .env
 .env.backup
 .env.production
+.env.docker.local
 .phpactor.json
 .phpunit.result.cache
 /.fleet
@@ -24,9 +25,7 @@ Homestead.yaml
 Thumbs.db
 /aiCodeSnippets
 project_informations.docx
-phpunit.xml
-Specifiche.txt
-specifiche.txt
-gemini.md
+
+/.claude
 /docs
 CLAUDE.md

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\TimeTrackingService;
 use App\Models\User;
 use App\Models\Project;
 use App\Models\Task;
@@ -18,9 +19,10 @@ class DashboardController extends Controller
      * Handle the incoming request to populate the main dashboard view.
      *
      * @param Request $request
+     * @param TimeTrackingService $timeTracking
      * @return Response
      */
-    public function index(Request $request): Response
+    public function index(Request $request, TimeTrackingService $timeTracking): Response
     {
         $user = $request->user();
         $activeTab = $request->get('tab', 'dashboard');
@@ -43,6 +45,8 @@ class DashboardController extends Controller
             'teamsCount' => $user->teams()->count(),
             'initialProjectId' => $initialProjectId,
             'unreadMessagesCount' => app(\App\Services\MessageService::class)->getUnreadCountForUser($user),
+            'activeTimer' => $timeTracking->getActiveTimer($user)?->makeHidden([])
+                ->load(['task:id,title,project_id', 'task.project:id,name']),
 
             /*
             |--------------------------------------------------------------------------
