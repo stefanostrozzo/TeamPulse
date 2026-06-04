@@ -1,0 +1,39 @@
+services:
+  app:
+    build:
+      context: .
+      target: app
+      args:
+        VITE_APP_NAME: TeamPulse
+        VITE_REVERB_APP_KEY: tashhaz4mvni2ddhl0pi
+        VITE_REVERB_HOST: localhost
+        VITE_REVERB_PORT: 8080
+        VITE_REVERB_SCHEME: http
+    image: teampulse:local
+    env_file: .env.docker.local
+
+  queue:
+    image: teampulse:local
+    env_file: .env.docker.local
+
+  reverb:
+    image: teampulse:local
+    env_file: .env.docker.local
+    ports:
+      - "8080:8080"
+
+  scheduler:
+    image: teampulse:local
+    env_file: .env.docker.local
+
+  nginx:
+    build:
+      context: .
+      target: nginx-server
+      args:
+        VITE_APP_NAME: TeamPulse
+        VITE_REVERB_APP_KEY: tashhaz4mvni2ddhl0pi
+        VITE_REVERB_HOST: localhost
+        VITE_REVERB_PORT: 8080
+        VITE_REVERB_SCHEME: http
+    image: teampulse-nginx:local
