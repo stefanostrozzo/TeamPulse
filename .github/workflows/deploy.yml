@@ -35,8 +35,8 @@ jobs:
           target: app
           push: true
           tags: |
-            ghcr.io/${{ github.repository }}:latest
-            ghcr.io/${{ github.repository }}:${{ github.sha }}
+            ghcr.io/${{ github.repository_owner }}/teampulse:latest
+            ghcr.io/${{ github.repository_owner }}/teampulse:${{ github.sha }}
           build-args: |
             VITE_APP_NAME=TeamPulse
             VITE_REVERB_APP_KEY=${{ secrets.VITE_REVERB_APP_KEY }}
@@ -53,8 +53,8 @@ jobs:
           target: nginx-server
           push: true
           tags: |
-            ghcr.io/${{ github.repository }}-nginx:latest
-            ghcr.io/${{ github.repository }}-nginx:${{ github.sha }}
+            ghcr.io/${{ github.repository_owner }}/teampulse-nginx:latest
+            ghcr.io/${{ github.repository_owner }}/teampulse-nginx:${{ github.sha }}
           build-args: |
             VITE_APP_NAME=TeamPulse
             VITE_REVERB_APP_KEY=${{ secrets.VITE_REVERB_APP_KEY }}
