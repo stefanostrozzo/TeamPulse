@@ -28,22 +28,39 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Docker metadata
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ghcr.io/${{ github.repository }}
-          tags: |
-            type=sha
-            type=raw,value=latest
-
-      - name: Build and push
+      - name: Build and push app image
         uses: docker/build-push-action@v6
         with:
           context: .
+          target: app
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          tags: |
+            ghcr.io/${{ github.repository }}:latest
+            ghcr.io/${{ github.repository }}:${{ github.sha }}
+          build-args: |
+            VITE_APP_NAME=TeamPulse
+            VITE_REVERB_APP_KEY=${{ secrets.VITE_REVERB_APP_KEY }}
+            VITE_REVERB_HOST=${{ secrets.VITE_REVERB_HOST }}
+            VITE_REVERB_PORT=443
+            VITE_REVERB_SCHEME=https
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build and push nginx image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          target: nginx-server
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository }}-nginx:latest
+            ghcr.io/${{ github.repository }}-nginx:${{ github.sha }}
+          build-args: |
+            VITE_APP_NAME=TeamPulse
+            VITE_REVERB_APP_KEY=${{ secrets.VITE_REVERB_APP_KEY }}
+            VITE_REVERB_HOST=${{ secrets.VITE_REVERB_HOST }}
+            VITE_REVERB_PORT=443
+            VITE_REVERB_SCHEME=https
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -61,8 +78,7 @@ jobs:
             set -e
             cd ${{ secrets.VPS_APP_DIR }}
             git pull origin main
-            echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-            docker compose pull
-            docker compose up -d
-            docker compose exec -T app php artisan migrate --force
+            echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u ${{ secrets.GHCR_USERNAME }} --password-stdin
+            docker compose --env-file .env.docker.local pull
+            docker compose --env-file .env.docker.local up -d
             docker image prune -f
